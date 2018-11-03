@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimaryDark">#1a0a3a</color>
+    <color name="colorPrimary">#252932</color>
+    <color name="colorAccent">#FFFFFF</color>
+    <color name="milkWhite">#e4e4e4</color>
+    <color name="colorLabel">#D3D3D3</color>
+    <color name="colorStandby">#eefc31</color>
+    <color name="colorCooking">#ff4542</color>
+</resources>

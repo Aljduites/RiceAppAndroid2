@@ -1,0 +1,28 @@
+<resources>
+    <string name="app_name">RiceApp</string>
+    <string name="image1">Logo</string>
+    <string name="lblPassword">Enter Password:</string>
+    <string name="txtPassword">Password</string>
+    <string name="btn1">1</string>
+    <string name="btn2">2</string>
+    <string name="btn3">3</string>
+    <string name="btn4">4</string>
+    <string name="btn5">5</string>
+    <string name="btn6">6</string>
+    <string name="lblCups">CUPS</string>
+    <string name="header1">Welcome!</string>
+    <string name="lblRiceAmt">Set Rice Amount</string>
+    <string name="lblMachineStat">MACHINE STATUS:</string>
+    <string name="standBy1">ON STANDBY</string>
+    <string name="standBy2">COOKING</string>
+    <string name="riceLevel">RICE LEVEL:</string>
+    <string name="lowStatus1">LOW</string>
+    <string name="lowStatus2">OK</string>
+    <string name="ok">OK</string>
+    <string name="cancel">CANCEL</string>
+    <string name="lblCookTime">SET COOKING TIME:</string>
+    <string name="btnTimePicker">SET TIME</string>
+    <string name="stop">Stop</string>
+    <string name="cookTime">COOKING TIME:</string>
+    <string name="swipe">SWIPE TO STOP</string>
+</resources>

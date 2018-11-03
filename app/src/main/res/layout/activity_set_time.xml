@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="20dp"
+    android:background="@color/colorAccent"
+    tools:context=".SetTimeActivity">
+
+    <TextView
+        android:id="@+id/lblCookTime"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/lblCookTime"
+        android:gravity="center"
+        android:textSize="35sp"
+        android:textColor="@color/colorPrimaryDark"
+        android:textStyle="bold"
+        />
+
+    <TextView
+        android:id="@+id/lblCookSetTime"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="30sp"
+        android:padding="20dp"
+        android:gravity="center"
+        android:textStyle="bold"
+        android:textColor="@color/colorPrimaryDark"
+        android:background="@color/colorLabel"
+        />
+
+    <Button
+        android:id="@+id/btnTimePicker"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/btnTimePicker"
+        android:textSize="40dp"
+        />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:orientation="horizontal"
+        >
+
+        <Button
+            android:id="@+id/btnOkTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="30sp"
+            android:padding="20dp"
+            android:text="@string/ok"
+            android:layout_marginStart="35dp"
+            android:layout_marginLeft="35dp"
+            />
+
+        <Button
+            android:id="@+id/btnCancelTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="35dp"
+            android:layout_marginLeft="35dp"
+            android:textSize="30sp"
+            android:padding="20dp"
+            android:text="@string/cancel"
+            />
+
+    </LinearLayout>
+
+</LinearLayout>

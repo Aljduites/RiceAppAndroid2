@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="20dp"
+    android:background="@color/colorAccent"
+    tools:context=".CupsActivity">
+
+    <TextView
+        android:id="@+id/lblCups"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:textSize="30sp"
+        android:textColor="@color/colorPrimaryDark"
+        android:text="@string/lblCups"
+        android:background="@color/colorStandby"
+        />
+
+    <GridLayout
+        android:id="@+id/gridButtons"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_margin="35dp"
+        android:columnOrderPreserved="false"
+        android:alignmentMode="alignMargins"
+        android:orientation="horizontal"
+        android:rowCount="2"
+        android:columnCount="2"
+        android:padding="20dp"
+        >
+
+        <Button
+            android:id="@+id/btn1"
+            android:textSize="30sp"
+            android:padding="20dp"
+            android:text="@string/btn1"
+            />
+        <Button
+            android:id="@+id/btn2"
+            android:textSize="30sp"
+            android:padding="20dp"
+            android:text="@string/btn2"
+            />
+
+        <Button
+            android:id="@+id/btn3"
+            android:textSize="30sp"
+            android:padding="20dp"
+            android:text="@string/btn3"
+            />
+
+        <Button
+            android:id="@+id/btn4"
+            android:textSize="30sp"
+            android:padding="20dp"
+            android:text="@string/btn4"
+            />
+
+        <Button
+            android:id="@+id/btn5"
+            android:textSize="30sp"
+            android:padding="20dp"
+            android:text="@string/btn5"
+            />
+
+        <Button
+            android:id="@+id/btn6"
+            android:textSize="30sp"
+            android:padding="20dp"
+            android:text="@string/btn6"
+            />
+    </GridLayout>
+
+    <Button
+        android:id="@+id/btnCancel2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/cancel"
+        android:textSize="30sp"
+        android:padding="20dp"
+        />
+</LinearLayout>
