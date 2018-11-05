@@ -59,6 +59,13 @@ public class CupsActivity extends AppCompatActivity {
                 openSetTimeActivity(btn6.getText().toString());
             }
         });
+
+        btnCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                previousActivity();
+            }
+        });
     }
 
     private void setViewIds(){

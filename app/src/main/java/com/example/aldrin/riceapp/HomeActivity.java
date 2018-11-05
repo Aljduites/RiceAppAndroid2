@@ -29,6 +29,7 @@ public class HomeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_home);
 
         setViewIds();
+
         btn1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -40,12 +41,12 @@ public class HomeActivity extends AppCompatActivity {
     private void setViewIds() {
         Log.d(TAG, "setViewIds: Created");
         btn1 = findViewById(R.id.btnRiceAmount);
-        lblTime = findViewById(R.id.lblCookTime);
+        lblTime = findViewById(R.id.lblCookLabel);
 
         try{
             bundle = getIntent().getExtras();
             _retVal = bundle.getString("time");
-            lblTime.setText(_retVal.toString());
+            lblTime.setText(_retVal);
             btn1.setEnabled(true);
 
             Boolean isTrue = lblTime.getText().toString().isEmpty();
@@ -54,7 +55,7 @@ public class HomeActivity extends AppCompatActivity {
             }
         }catch (Exception e) {
             _retVal = "";
-            lblTime.setText(_retVal.toString());
+            lblTime.setText("");
         }
     }
 

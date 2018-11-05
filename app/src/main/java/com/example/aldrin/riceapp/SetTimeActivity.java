@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.app.TimePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -14,6 +15,14 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+import okhttp3.WebSocket;
+import okhttp3.WebSocketListener;
+
 public class SetTimeActivity extends AppCompatActivity implements TimePickerDialog.OnTimeSetListener {
 
     private static final String TAG = SetTimeActivity.class.getName();
@@ -23,6 +32,8 @@ public class SetTimeActivity extends AppCompatActivity implements TimePickerDial
     private Bundle bundle;
     private AlertDialog.Builder builder1;
     private AlertDialog alertDialog;
+    private OkHttpClient client;
+    private WebSocket wsl;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,6 +101,17 @@ public class SetTimeActivity extends AppCompatActivity implements TimePickerDial
         bundle = getIntent().getExtras();
         _retVal = bundle.getString("key");
         builder1 = new AlertDialog.Builder(SetTimeActivity.this);
+        client = new OkHttpClient();
+
+        Request request = new Request.Builder()
+                .url("wss://app.remoteme.org/arLite/~XFt2FmYgf3dxKTdZpb3CuCZJRTq4Z55FkNSJwQwFry1A64iEvchIs3WTKXezEFh4j/ws/v1/1001/")
+                .build();
+
+        EchoWebSocketListener listener = new EchoWebSocketListener();
+        WebSocket ws = client.newWebSocket(request, listener);
+
+        wsl = ws;
+        client.dispatcher().executorService().shutdown();
     }
 
     public void startService() {
@@ -122,6 +144,22 @@ public class SetTimeActivity extends AppCompatActivity implements TimePickerDial
 
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
+    }
+
+    private final class EchoWebSocketListener extends WebSocketListener {
+        private static final int NORMAL_STATUS_CLOSURE = 1000;
+
+        @Override
+        public void onOpen(WebSocket webSocket, Response response) {
+            wsl.send("{  \"type\" : \"PingMessage\"}".getBytes().toString());
+        }
+
+        @Override
+        public void onFailure(WebSocket webSocket, Throwable t, Response response) {
+
+        }
+
+
     }
 
     private void returnCups() {
