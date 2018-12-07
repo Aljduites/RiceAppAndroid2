@@ -22,6 +22,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.WebSocket;
 import okhttp3.WebSocketListener;
+import okio.ByteString;
 
 public class SetTimeActivity extends AppCompatActivity implements TimePickerDialog.OnTimeSetListener {
 
@@ -146,22 +147,62 @@ public class SetTimeActivity extends AppCompatActivity implements TimePickerDial
         startActivity(intent);
     }
 
+
     private final class EchoWebSocketListener extends WebSocketListener {
         private static final int NORMAL_STATUS_CLOSURE = 1000;
 
         @Override
         public void onOpen(WebSocket webSocket, Response response) {
-            wsl.send("{  \"type\" : \"PingMessage\"}".getBytes().toString());
+//            wsl.send("{  \"type\" : \"PingMessage\"}".getBytes().toString());
+            wsl.send("{  \"type\" : \"PingMessage\", \"deviceId\" : 1001 }");
+            wsl.send("{\n" +
+                    "\"type\" : \"VariableObserveMessage\",\n" +
+                    "\"deviceId\" : 1001,\n" +
+                    "\"variables\" : [ {\n" +
+                    "\"name\" : \"button1\",\n" +
+                    "\"type\" : \"BOOLEAN\"\n" +
+                    "},{\n" +
+                    "\"name\" : \"button2\",\n" +
+                    "\"type\" : \"BOOLEAN\"\n" +
+                    " },{\n" +
+                    "\"name\" : \"button3\",\n" +
+                    "\"type\" : \"BOOLEAN\"\n" +
+                    "},{\n" +
+                    "\"name\" : \"relay1\",\n" +
+                    "\"type\" : \"BOOLEAN\"\n" +
+                    "},{\n" +
+                    "\"name\" : \"relay2\",\n" +
+                    "\"type\" : \"BOOLEAN\"\n" +
+                    "}]\n" +
+                    "}");
+//            webSocket.close(NORMAL_STATUS_CLOSURE, "Goodbye");
+
         }
 
         @Override
         public void onFailure(WebSocket webSocket, Throwable t, Response response) {
-
         }
 
+        @Override
+        public void onMessage(WebSocket webSocket, String text) {
+//            Toast.makeText(SetTimeActivity.this, text, Toast.LENGTH_LONG).show();
+            output("Receiving: " + text);
+        }
 
+        @Override
+        public void onMessage(WebSocket webSocket, ByteString bytes) {
+            output("Receiving: " + bytes.hex());
+        }
     }
 
+    private void output(final String txt) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                lblTime.setText(txt);
+            }
+        });
+    }
     private void returnCups() {
         Log.d(TAG, "returnCups: Clicked");
         Intent intent = new Intent(SetTimeActivity.this, CupsActivity.class);

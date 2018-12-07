@@ -155,6 +155,7 @@ public class MainActivity extends AppCompatActivity {
         WebSocket ws = client.newWebSocket(request, listener);
 
         wsl = ws;
+
         client.dispatcher().executorService().shutdown();
     }
 

@@ -59,6 +59,7 @@
                 android:orientation="horizontal"
                 >
 
+
                 <Button
                     android:id="@+id/btnOkTime"
                     android:layout_width="wrap_content"
@@ -70,6 +71,8 @@
                     android:layout_marginLeft="35dp"
                     android:enabled="false"
                     />
+
+
 
                 <Button
                     android:id="@+id/btnCancelTime"

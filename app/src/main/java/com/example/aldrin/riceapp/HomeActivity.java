@@ -13,6 +13,12 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.remoteme.client.api.ArvariablesrestApi;
+import org.remoteme.client.api.HellorestApi;
+import org.remoteme.client.model.HelloDto;
+import org.remoteme.client.model.VariableDto;
+import org.remoteme.client.model.VariableSchedulerDto;
+
 import java.util.List;
 
 public class HomeActivity extends AppCompatActivity {
@@ -42,6 +48,42 @@ public class HomeActivity extends AppCompatActivity {
         Log.d(TAG, "setViewIds: Created");
         btn1 = findViewById(R.id.btnRiceAmount);
         lblTime = findViewById(R.id.lblCookLabel);
+
+        Thread thread = new Thread(new Runnable(){
+            public void run() {
+                try {
+                    try {
+                        List<VariableDto> cds = new ArvariablesrestApi().getVariablesUsingGET("~XFt2FmYgf3dxKTdZpb3CuCZJRTq4Z55FkNSJwQwFry1A64iEvchIs3WTKXezEFh4j");
+//                        List<VariableSchedulerDto> fd = new ArvariablesrestApi().getSchedulersUsingGET("BOOLEAN", "BOOLEAN",
+//                                "button3", "~XFt2FmYgf3dxKTdZpb3CuCZJRTq4Z55FkNSJwQwFry1A64iEvchIs3WTKXezEFh4j");
+                        Log.d(TAG + "Testing: ", cds.get(0).getName());
+
+//                        HelloDto fdf = new HelloDto();
+//                        fdf.setUserName("aldrin");
+//
+//                        VariableSchedulerDto ss = new VariableSchedulerDto();
+//
+//                        List<VariableDto> sss = new ArvariablesrestApi().getVariablesUsingGET("~XFt2FmYgf3dxKTdZpb3CuCZJRTq4Z55FkNSJwQwFry1A64iEvchIs3WTKXezEFh4j");
+//                        HelloDto adasd = new HellorestApi().getHelloDtoUsingGET("adasd");
+//                        HelloDto asss = new HellorestApi().getWithNameUsingGET("aldrin", "~XFt2FmYgf3dxKTdZpb3CuCZJRTq4Z55FkNSJwQwFry1A64iEvchIs3WTKXezEFh4j");
+
+
+//                        HelloDto sdv = new HellorestApi().modifyUsingPOST(fdf, "~XFt2FmYgf3dxKTdZpb3CuCZJRTq4Z55FkNSJwQwFry1A64iEvchIs3WTKXezEFh4j");
+//                        Log.d(TAG + " Hello there: ", sss.toString());
+
+
+//                        Log.d(TAG + " Hello world", adasd.getUserName());
+//                        Log.d(TAG + "Testing",asss.getHelloResponse());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        thread.start();
 
         try{
             bundle = getIntent().getExtras();
