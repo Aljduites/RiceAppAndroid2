@@ -23,6 +23,21 @@ import okhttp3.Response;
 import okhttp3.WebSocket;
 import okhttp3.WebSocketListener;
 import okio.ByteString;
+import org.remoteme.client.api.ArliterestvariablesApi;
+import org.remoteme.client.api.ArvariablesrestApi;
+import org.remoteme.client.model.VariableSchedulerDto;
+import org.remoteme.client.model.VariableSchedulerDto.ModeEnum;
+import org.remoteme.client.model.VariableDto.TypeEnum;
+import org.remoteme.client.invoker.ApiException;
+import org.remoteme.client.model.VariableDto;
+import org.remoteme.client.model.VariableSchedulerEntityDto;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 
 public class SetTimeActivity extends AppCompatActivity implements TimePickerDialog.OnTimeSetListener {
 
@@ -35,6 +50,7 @@ public class SetTimeActivity extends AppCompatActivity implements TimePickerDial
     private AlertDialog alertDialog;
     private OkHttpClient client;
     private WebSocket wsl;
+    private static ArliterestvariablesApi variableApi;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,17 +118,17 @@ public class SetTimeActivity extends AppCompatActivity implements TimePickerDial
         bundle = getIntent().getExtras();
         _retVal = bundle.getString("key");
         builder1 = new AlertDialog.Builder(SetTimeActivity.this);
-        client = new OkHttpClient();
+//        client = new OkHttpClient();
 
-        Request request = new Request.Builder()
-                .url("wss://app.remoteme.org/arLite/~XFt2FmYgf3dxKTdZpb3CuCZJRTq4Z55FkNSJwQwFry1A64iEvchIs3WTKXezEFh4j/ws/v1/1001/")
-                .build();
-
-        EchoWebSocketListener listener = new EchoWebSocketListener();
-        WebSocket ws = client.newWebSocket(request, listener);
-
-        wsl = ws;
-        client.dispatcher().executorService().shutdown();
+//        Request request = new Request.Builder()
+//                .url("wss://app.remoteme.org/arLite/~XFt2FmYgf3dxKTdZpb3CuCZJRTq4Z55FkNSJwQwFry1A64iEvchIs3WTKXezEFh4j/ws/v1/1001/")
+//                .build();
+//
+//        EchoWebSocketListener listener = new EchoWebSocketListener();
+//        WebSocket ws = client.newWebSocket(request, listener);
+//
+//        wsl = ws;
+//        client.dispatcher().executorService().shutdown();
     }
 
     public void startService() {
@@ -144,7 +160,85 @@ public class SetTimeActivity extends AppCompatActivity implements TimePickerDial
         intent.putExtras(bundle);
 
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        sendSetTime(lblTime.getText().toString());
         startActivity(intent);
+    }
+
+    private VariableDto createVariable(boolean persistant, boolean scheduled, TypeEnum type, String arToken) throws ApiException {
+        VariableDto v = new VariableDto();
+        v.setHistory(false);
+        v.setName("button3");
+        v.setPersistent(persistant);
+        v.setScheduled(scheduled);
+        v.setType(type);
+        getVariableApi().createVariable(v,arToken);
+        return v;
+    }
+
+    private void sendSetTime(String time) {
+        Thread thread = new Thread(new Runnable(){
+            public void run() {
+                try {
+                    try {
+                        Date today = new Date();
+                        String arToken = "~XFt2FmYgf3dxKTdZpb3CuCZJRTq4Z55FkNSJwQwFry1A64iEvchIs3WTKXezEFh4j";
+                        VariableDto v = new VariableDto();
+                        v.setName("button3");
+                        v.setType(TypeEnum.BOOLEAN);
+
+                        //Format of the date defined in the input String
+                        DateFormat timeformat = new SimpleDateFormat("hh:mm aa", Locale.US);
+                        DateFormat dateFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss 'GMT'z yyyy", Locale.US);
+                        //Desired format: 24 hour format: Change the pattern as per the need
+                        DateFormat outputformat = new SimpleDateFormat("HH:mm", Locale.US);
+                        DateFormat dateOutput = new SimpleDateFormat("dd.MM.yyyy", Locale.US);
+                        Date date = null;
+                        Date date2 = null;
+                        String output = null;
+                        String output2 = null;
+
+                        date= timeformat.parse(lblTime.getText().toString());
+                        date2 = dateFormat.parse(today.toString());
+                        //Changing the format of date and storing it in String
+                        output = outputformat.format(date);
+                        output2 = dateOutput.format(date2);
+
+                        List<VariableSchedulerEntityDto> schedulers = getVariableApi().getSchedulers(v.getName(), v.getType().toString(), arToken);
+
+                        VariableSchedulerDto scheduler = new VariableSchedulerDto();
+                        scheduler.setCron("");
+                        scheduler.setMode(ModeEnum.TIME);
+                        scheduler.setTime(output2 + " " + output);
+                        scheduler.setValues(Arrays.asList("true"));
+
+                        Log.d(TAG + " Date: ", output2 + " " + output);
+
+//                        getVariableApi().addScheduler(scheduler,v.getName(),v.getType().toString(),arToken);
+                        scheduler.setTime(output2 + " " + output);
+                        getVariableApi().updateScheduler(scheduler,schedulers.get(0).getVariableSchedulerId(),arToken);
+                        schedulers = getVariableApi().getSchedulers(v.getName(), v.getType().toString(), arToken);
+
+                        Log.d(TAG + " Testing1: ", schedulers.get(0).getTime());
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        thread.start();
+    }
+
+    protected static ArliterestvariablesApi getVariableApi() {
+        if (variableApi == null) {
+            variableApi = new ArliterestvariablesApi();
+
+            variableApi.setBasePath(variableApi.getBasePath().replaceAll("https://", "http://"));
+        }
+        return variableApi;
     }
 
 

@@ -23,7 +23,6 @@ import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.RequestBody;
 import okhttp3.WebSocket;
 import okhttp3.Response;
 import okhttp3.WebSocketListener;
@@ -141,7 +140,7 @@ public class MainActivity extends AppCompatActivity {
         btn2 = findViewById(R.id.btnCancel);
         //btnTest = findViewById(R.id.btnStart);
         editTxt1 = findViewById(R.id.txtPassword);
-        client = new OkHttpClient();
+//        client = new OkHttpClient();
         //btnOn = findViewById(R.id.btnOn);
         //btnOff = findViewById(R.id.btnOff);
     }
