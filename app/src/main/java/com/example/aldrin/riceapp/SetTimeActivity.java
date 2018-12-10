@@ -5,12 +5,15 @@ import android.app.TimePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.HandlerThread;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
@@ -23,6 +26,8 @@ import okhttp3.Response;
 import okhttp3.WebSocket;
 import okhttp3.WebSocketListener;
 import okio.ByteString;
+
+import org.apache.http.HttpResponse;
 import org.remoteme.client.api.ArliterestvariablesApi;
 import org.remoteme.client.api.ArvariablesrestApi;
 import org.remoteme.client.model.VariableSchedulerDto;
@@ -38,6 +43,8 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 
 public class SetTimeActivity extends AppCompatActivity implements TimePickerDialog.OnTimeSetListener {
 
@@ -50,7 +57,11 @@ public class SetTimeActivity extends AppCompatActivity implements TimePickerDial
     private AlertDialog alertDialog;
     private OkHttpClient client;
     private WebSocket wsl;
+    private RelativeLayout relativeLayout;
     private static ArliterestvariablesApi variableApi;
+    private volatile String textValue;
+    private final CountDownLatch latch = new CountDownLatch(1);
+    private ConnectionDetector connectionDetector;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +69,11 @@ public class SetTimeActivity extends AppCompatActivity implements TimePickerDial
         setContentView(R.layout.activity_set_time);
         Log.d(TAG, "onCreate: SetTimeActivity");
         setViewIds();
+        waitForResponse();
+
+        if(textValue.equals("false")){
+            relativeLayout.setVisibility(View.GONE);
+        }
 
         btnSetTime.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -109,6 +125,88 @@ public class SetTimeActivity extends AppCompatActivity implements TimePickerDial
         });
     }
 
+    private void waitForResponse() {
+
+        try
+        {
+            Thread UIThread = new HandlerThread("UIHandler"){
+                @Override
+                public void run() {
+                    try
+                    {
+                        try {
+                            String arToken = "~XFt2FmYgf3dxKTdZpb3CuCZJRTq4Z55FkNSJwQwFry1A64iEvchIs3WTKXezEFh4j";
+                            VariableDto v = new VariableDto();
+                            v.setName("button1");
+                            v.setType(TypeEnum.BOOLEAN);
+
+                            VariableSchedulerDto scheduler = new VariableSchedulerDto();
+                            scheduler.setCron("");
+                            scheduler.setMode(ModeEnum.TIME);
+                            scheduler.setTime("01.01.2018 12:00");
+                            scheduler.setValues(Arrays.asList("true"));
+
+                            getVariableApi().setVariableTextValue("false", "button1", "BOOLEAN", arToken);
+                            getVariableApi().addScheduler(scheduler,v.getName(),v.getType().toString(),arToken);
+
+                            textValue = getVariableApi().getVariableTextValue("button1", "BOOLEAN", arToken);
+                            Log.d(TAG + " Tested", textValue);
+                            latch.countDown();
+                        }catch (Exception e) {
+                            builder1.setMessage("Something went wrong. Please try again later.");
+                            builder1.setCancelable(true);
+
+                            builder1.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    returnCups();
+                                }
+                            });
+
+                            alertDialog = builder1.create();
+                            alertDialog.show();
+                        }
+                    }catch (Exception e) {
+                        builder1.setMessage("Something went wrong. Please try again later.");
+                        builder1.setCancelable(true);
+
+                        builder1.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                returnCups();
+                            }
+                        });
+
+                        alertDialog = builder1.create();
+                        alertDialog.show();
+                    }
+                }
+            };
+
+            UIThread.start();
+            latch.await();
+
+        }catch (Exception e){
+            builder1.setMessage("Something went wrong. Please try again later.");
+            builder1.setCancelable(true);
+
+            builder1.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    returnCups();
+                }
+            });
+
+            alertDialog = builder1.create();
+            alertDialog.show();
+        }
+    }
+
+    private String getTextValue() {
+        return textValue;
+    }
+
+
     private void setViewIds() {
         Log.d(TAG, "setViewIds: Created");
         btnSetTime = findViewById(R.id.btnTimePicker);
@@ -118,17 +216,7 @@ public class SetTimeActivity extends AppCompatActivity implements TimePickerDial
         bundle = getIntent().getExtras();
         _retVal = bundle.getString("key");
         builder1 = new AlertDialog.Builder(SetTimeActivity.this);
-//        client = new OkHttpClient();
-
-//        Request request = new Request.Builder()
-//                .url("wss://app.remoteme.org/arLite/~XFt2FmYgf3dxKTdZpb3CuCZJRTq4Z55FkNSJwQwFry1A64iEvchIs3WTKXezEFh4j/ws/v1/1001/")
-//                .build();
-//
-//        EchoWebSocketListener listener = new EchoWebSocketListener();
-//        WebSocket ws = client.newWebSocket(request, listener);
-//
-//        wsl = ws;
-//        client.dispatcher().executorService().shutdown();
+        relativeLayout = findViewById(R.id.loadingPanel);
     }
 
     public void startService() {
@@ -137,7 +225,6 @@ public class SetTimeActivity extends AppCompatActivity implements TimePickerDial
 
         bundle.putString("serviceTime", lblTime.getText().toString());
         intent.putExtras(bundle);
-        startService(intent);
         openHome();
     }
 
@@ -150,7 +237,26 @@ public class SetTimeActivity extends AppCompatActivity implements TimePickerDial
         lblSetTime.setText(String.format("%02d:%02d %s", (hourOfDay == 12 || hourOfDay == 0) ? 12 : hourOfDay % 12, minute, isPM ? "PM" : "AM"));
 
     }
+    private void isConnected() {
+        connectionDetector = new ConnectionDetector(SetTimeActivity.this);
+        if (!connectionDetector.isConnected()) {
+            builder1 = new AlertDialog.Builder(SetTimeActivity.this);
+            builder1.setMessage("No connection found!");
+            builder1.setCancelable(false);
 
+            builder1.setNeutralButton("Try again", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    isConnected();
+                }
+            });
+
+            alertDialog = builder1.create();
+            alertDialog.setTitle("Alert");
+            alertDialog.setIcon(R.drawable.icon);
+            alertDialog.show();
+        }
+    }
     private void openHome() {
         Log.d(TAG, "openHome: Used");
         Intent intent = new Intent(SetTimeActivity.this, HomeActivity.class);
@@ -167,7 +273,7 @@ public class SetTimeActivity extends AppCompatActivity implements TimePickerDial
     private VariableDto createVariable(boolean persistant, boolean scheduled, TypeEnum type, String arToken) throws ApiException {
         VariableDto v = new VariableDto();
         v.setHistory(false);
-        v.setName("button3");
+        v.setName("button1");
         v.setPersistent(persistant);
         v.setScheduled(scheduled);
         v.setType(type);
@@ -176,14 +282,15 @@ public class SetTimeActivity extends AppCompatActivity implements TimePickerDial
     }
 
     private void sendSetTime(String time) {
+        final String time1 = time;
         Thread thread = new Thread(new Runnable(){
             public void run() {
                 try {
                     try {
-                        Date today = new Date();
                         String arToken = "~XFt2FmYgf3dxKTdZpb3CuCZJRTq4Z55FkNSJwQwFry1A64iEvchIs3WTKXezEFh4j";
+                        Date today = new Date();
                         VariableDto v = new VariableDto();
-                        v.setName("button3");
+                        v.setName("button1");
                         v.setType(TypeEnum.BOOLEAN);
 
                         //Format of the date defined in the input String
@@ -197,13 +304,17 @@ public class SetTimeActivity extends AppCompatActivity implements TimePickerDial
                         String output = null;
                         String output2 = null;
 
-                        date= timeformat.parse(lblTime.getText().toString());
+                        date= timeformat.parse(time1);
                         date2 = dateFormat.parse(today.toString());
                         //Changing the format of date and storing it in String
                         output = outputformat.format(date);
                         output2 = dateOutput.format(date2);
 
+                        // get schedulers
                         List<VariableSchedulerEntityDto> schedulers = getVariableApi().getSchedulers(v.getName(), v.getType().toString(), arToken);
+                        //get variable
+                        List<VariableDto> variables = getVariableApi().getVariables(arToken);
+                        String textValue = getVariableApi().getVariableTextValue("button1", "BOOLEAN", arToken);
 
                         VariableSchedulerDto scheduler = new VariableSchedulerDto();
                         scheduler.setCron("");
@@ -215,16 +326,35 @@ public class SetTimeActivity extends AppCompatActivity implements TimePickerDial
 
 //                        getVariableApi().addScheduler(scheduler,v.getName(),v.getType().toString(),arToken);
                         scheduler.setTime(output2 + " " + output);
-                        getVariableApi().updateScheduler(scheduler,schedulers.get(0).getVariableSchedulerId(),arToken);
-                        schedulers = getVariableApi().getSchedulers(v.getName(), v.getType().toString(), arToken);
+                        List<String> listSchedValues = schedulers.get(0).getValues();
+
+                        VariableDto v2 = new VariableDto();
+                        v2.setName("button1");
+                        v2.setScheduled(true);
+                        v2.setPersistent(true);
+                        v2.setHistory(true);
+                        v2.setType(TypeEnum.BOOLEAN);
+
+                        Log.d(TAG + " Testing", textValue);
+                        if(textValue == "false") {
+                            if(listSchedValues.isEmpty()) {
+                                getVariableApi().addScheduler(scheduler, v2.getName(),v2.getType().toString(), arToken);
+                            }
+                            getVariableApi().updateScheduler(scheduler,schedulers.get(0).getVariableSchedulerId(),arToken);
+                        } else {
+                            if(listSchedValues.isEmpty()) {
+                                getVariableApi().addScheduler(scheduler, v2.getName(),v2.getType().toString(), arToken);
+                            }
+                            getVariableApi().setVariableTextValue("false", "button1", "BOOLEAN", arToken);
+                            getVariableApi().updateScheduler(scheduler,schedulers.get(0).getVariableSchedulerId(),arToken);
+                        }
 
                         Log.d(TAG + " Testing1: ", schedulers.get(0).getTime());
-
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                        e.printStackTrace();
                 }
             }
         });
@@ -239,63 +369,6 @@ public class SetTimeActivity extends AppCompatActivity implements TimePickerDial
             variableApi.setBasePath(variableApi.getBasePath().replaceAll("https://", "http://"));
         }
         return variableApi;
-    }
-
-
-    private final class EchoWebSocketListener extends WebSocketListener {
-        private static final int NORMAL_STATUS_CLOSURE = 1000;
-
-        @Override
-        public void onOpen(WebSocket webSocket, Response response) {
-//            wsl.send("{  \"type\" : \"PingMessage\"}".getBytes().toString());
-            wsl.send("{  \"type\" : \"PingMessage\", \"deviceId\" : 1001 }");
-            wsl.send("{\n" +
-                    "\"type\" : \"VariableObserveMessage\",\n" +
-                    "\"deviceId\" : 1001,\n" +
-                    "\"variables\" : [ {\n" +
-                    "\"name\" : \"button1\",\n" +
-                    "\"type\" : \"BOOLEAN\"\n" +
-                    "},{\n" +
-                    "\"name\" : \"button2\",\n" +
-                    "\"type\" : \"BOOLEAN\"\n" +
-                    " },{\n" +
-                    "\"name\" : \"button3\",\n" +
-                    "\"type\" : \"BOOLEAN\"\n" +
-                    "},{\n" +
-                    "\"name\" : \"relay1\",\n" +
-                    "\"type\" : \"BOOLEAN\"\n" +
-                    "},{\n" +
-                    "\"name\" : \"relay2\",\n" +
-                    "\"type\" : \"BOOLEAN\"\n" +
-                    "}]\n" +
-                    "}");
-//            webSocket.close(NORMAL_STATUS_CLOSURE, "Goodbye");
-
-        }
-
-        @Override
-        public void onFailure(WebSocket webSocket, Throwable t, Response response) {
-        }
-
-        @Override
-        public void onMessage(WebSocket webSocket, String text) {
-//            Toast.makeText(SetTimeActivity.this, text, Toast.LENGTH_LONG).show();
-            output("Receiving: " + text);
-        }
-
-        @Override
-        public void onMessage(WebSocket webSocket, ByteString bytes) {
-            output("Receiving: " + bytes.hex());
-        }
-    }
-
-    private void output(final String txt) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                lblTime.setText(txt);
-            }
-        });
     }
     private void returnCups() {
         Log.d(TAG, "returnCups: Clicked");

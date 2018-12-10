@@ -13,7 +13,7 @@ public class NewService extends IntentService {
     @Override
     public int onStartCommand(@Nullable Intent intent, int flags, int startId) {
         Bundle bundle = intent.getExtras();
-        Toast.makeText(NewService.this, "Service started " + bundle.getString("serviceTime"), Toast.LENGTH_LONG).show();
+//        Toast.makeText(NewService.this, "Service started " + bundle.getString("serviceTime"), Toast.LENGTH_LONG).show();
 
         return super.onStartCommand(intent, flags, startId);
     }

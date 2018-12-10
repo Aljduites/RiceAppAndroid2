@@ -15,14 +15,6 @@ import android.widget.Toast;
 
 import java.util.List;
 
-import org.remoteme.client.api.ArliterestvariablesApi;
-import org.remoteme.client.api.ArvariablesrestApi;
-import org.remoteme.client.model.VariableSchedulerDto.ModeEnum;
-import org.remoteme.client.model.VariableDto.TypeEnum;
-import org.remoteme.client.invoker.ApiException;
-import org.remoteme.client.model.VariableDto;
-import org.remoteme.client.model.VariableSchedulerEntityDto;
-
 public class HomeActivity extends AppCompatActivity {
 
     private static final String TAG = HomeActivity.class.getName();
@@ -76,10 +68,10 @@ public class HomeActivity extends AppCompatActivity {
 
     public void checkService(View view) {
         if(isMyServiceRunning(getApplicationContext(), NewService.class)) {
-            Toast.makeText(getApplicationContext(), "Service is running", Toast.LENGTH_LONG).show();
+//            Toast.makeText(getApplicationContext(), "Service is running", Toast.LENGTH_LONG).show();
         }
         else {
-            Toast.makeText(getApplicationContext(), "Service is not running", Toast.LENGTH_LONG).show();
+//            Toast.makeText(getApplicationContext(), "Service is not running", Toast.LENGTH_LONG).show();
         }
     }
 
