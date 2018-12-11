@@ -5,6 +5,7 @@ import android.app.ActivityManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.os.HandlerThread;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -14,6 +15,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.List;
+import org.remoteme.client.api.ArliterestvariablesApi;
+import org.remoteme.client.model.VariableSchedulerDto;
+import org.remoteme.client.model.VariableSchedulerDto.ModeEnum;
+import org.remoteme.client.model.VariableDto.TypeEnum;
+import org.remoteme.client.invoker.ApiException;
+import org.remoteme.client.model.VariableDto;
+import org.remoteme.client.model.VariableSchedulerEntityDto;
 
 public class HomeActivity extends AppCompatActivity {
 
@@ -22,6 +30,7 @@ public class HomeActivity extends AppCompatActivity {
     private TextView lblTime;
     private Bundle bundle;
     private String _retVal;
+    private static ArliterestvariablesApi variableApi;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,6 +73,15 @@ public class HomeActivity extends AppCompatActivity {
         Intent intent = new Intent(HomeActivity.this, CupsActivity.class);
 
         startActivity(intent);
+    }
+
+    protected static ArliterestvariablesApi getVariableApi() {
+        if (variableApi == null) {
+            variableApi = new ArliterestvariablesApi();
+
+            variableApi.setBasePath(variableApi.getBasePath().replaceAll("https://", "http://"));
+        }
+        return variableApi;
     }
 
     public void checkService(View view) {
