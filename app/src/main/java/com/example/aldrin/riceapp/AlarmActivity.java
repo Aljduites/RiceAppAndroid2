@@ -2,8 +2,10 @@ package com.example.aldrin.riceapp;
 
 import android.content.Context;
 import android.content.Intent;
+import android.media.AudioManager;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Vibrator;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -42,13 +44,15 @@ public class AlarmActivity extends AppCompatActivity {
     }
 
     private void setViewIds() {
+
         swipeButton = findViewById(R.id.btnSwipe);
         Vibrator vibrator = (Vibrator)getSystemService(Context.VIBRATOR_SERVICE);
         vibrator.vibrate(1000);
-        ringtone = RingtoneManager.getRingtone(getApplicationContext(),
-                RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE));
+        ringtone = RingtoneManager.getRingtone(AlarmActivity.this,
+                RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM));
         timer = new Timer();
         if(ringtone != null) {
+
             ringtone.play();
             timer.scheduleAtFixedRate(new TimerTask() {
                 @Override

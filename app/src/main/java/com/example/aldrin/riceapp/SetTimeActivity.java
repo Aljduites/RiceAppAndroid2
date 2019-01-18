@@ -40,6 +40,7 @@ public class SetTimeActivity extends AppCompatActivity implements TimePickerDial
     private Button btnSetTime, btnCancel, btnOk;
     private TextView lblTime;
     private String _retVal;
+    private Intent intent;
     private Bundle bundle;
     private AlertDialog.Builder builder1;
     private AlertDialog alertDialog;
@@ -334,8 +335,12 @@ public class SetTimeActivity extends AppCompatActivity implements TimePickerDial
                         String arToken = "~XFt2FmYgf3dxKTdZpb3CuCZJRTq4Z55FkNSJwQwFry1A64iEvchIs3WTKXezEFh4j";
                         Date today = new Date();
                         VariableDto v = new VariableDto();
-                        v.setName("button1");
-                        v.setType(TypeEnum.BOOLEAN);
+                        v.setName("cookTime");
+                        v.setType(TypeEnum.INTEGER_BOOLEAN);
+
+                        VariableDto cookStatus = new VariableDto();
+                        cookStatus.setName("riceCookerStatus");
+                        cookStatus.setType(TypeEnum.BOOLEAN);
 
                         //Format of the date defined in the input String
                         DateFormat timeformat = new SimpleDateFormat("hh:mm aa", Locale.US);
@@ -357,19 +362,20 @@ public class SetTimeActivity extends AppCompatActivity implements TimePickerDial
                         // get schedulers
                         List<VariableSchedulerEntityDto> schedulers = getVariableApi().getSchedulers(v.getName(), v.getType().toString(), arToken);
                         //get variable
-                        List<VariableDto> variables = getVariableApi().getVariables(arToken);
-                        String textValue = getVariableApi().getVariableTextValue("button1", "BOOLEAN", arToken);
+                        //List<VariableDto> variables = getVariableApi().getVariables(arToken);
+                        //String textValue = getVariableApi().getVariableTextValue("cookTime", "BOOLEAN", arToken);
 
                         VariableSchedulerDto scheduler = new VariableSchedulerDto();
                         scheduler.setCron("");
                         scheduler.setMode(ModeEnum.TIME);
                         scheduler.setTime(output2 + " " + output);
-                        scheduler.setValues(Arrays.asList("true"));
+                        scheduler.setValues(Arrays.asList(_retVal + ",true"));
 
                         Log.d(TAG + " Date: ", output2 + " " + output);
 
                         if(schedulers.isEmpty()) {
-                            getVariableApi().setVariableTextValue("false", v.getName(), v.getType().toString(), arToken);
+                            getVariableApi().setVariableTextValue("0,false", v.getName(), v.getType().toString(), arToken);
+                            getVariableApi().setVariableTextValue("false", cookStatus.getName(), cookStatus.getType().toString(), arToken);
                             getVariableApi().addScheduler(scheduler,v.getName(),v.getType().toString(),arToken);
                             Log.d(TAG + " Tested1", "Success1");
                         }
@@ -377,7 +383,7 @@ public class SetTimeActivity extends AppCompatActivity implements TimePickerDial
                             // get schedulers
                             schedulers = getVariableApi().getSchedulers(v.getName(), v.getType().toString(), arToken);
 
-                            getVariableApi().setVariableTextValue("false", v.getName(), v.getType().toString(), arToken);
+                            getVariableApi().setVariableTextValue("0,false", v.getName(), v.getType().toString(), arToken);
                             scheduler.setTime(output2 + " " + output);
                             getVariableApi().updateScheduler(scheduler, schedulers.get(0).getVariableSchedulerId(), arToken);
                             Log.d(TAG + " Tested2", "Success2");
