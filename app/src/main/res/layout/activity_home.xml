@@ -55,7 +55,7 @@
                 android:textSize="30sp"
                 android:textStyle="bold"
                 android:gravity="center"
-                android:background="@color/colorLabel"
+                android:background="@color/colorPrimaryDark"
                 android:onClick="checkService"
                 />
             <TextView

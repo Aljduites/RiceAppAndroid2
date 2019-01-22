@@ -14,7 +14,15 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+
 import org.remoteme.client.api.ArliterestvariablesApi;
 import org.remoteme.client.model.VariableSchedulerDto;
 import org.remoteme.client.model.VariableSchedulerDto.ModeEnum;
@@ -26,11 +34,13 @@ import org.remoteme.client.model.VariableSchedulerEntityDto;
 public class HomeActivity extends AppCompatActivity {
 
     private static final String TAG = HomeActivity.class.getName();
+    private static final String FILE_NAME = "example.txt";
     private Button btn1;
     private TextView lblTime;
     private Bundle bundle;
-    private String _retVal;
+    private String _retVal, cookingStatus;
     private static ArliterestvariablesApi variableApi;
+    private final CountDownLatch latch = new CountDownLatch(1);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +48,9 @@ public class HomeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_home);
 
         setViewIds();
+        waitForResponse();
+        setData();
+        load();
 
         btn1.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -51,20 +64,21 @@ public class HomeActivity extends AppCompatActivity {
         Log.d(TAG, "setViewIds: Created");
         btn1 = findViewById(R.id.btnRiceAmount);
         lblTime = findViewById(R.id.lblCookLabel);
-
+    }
+    private void setData() {
         try{
+            wait(5000);
             bundle = getIntent().getExtras();
             _retVal = bundle.getString("time");
-            lblTime.setText(_retVal);
-            btn1.setEnabled(true);
-
-            Boolean isTrue = lblTime.getText().toString().isEmpty();
-            if(!isTrue) {
-                btn1.setEnabled(false);
+            if(!_retVal.isEmpty()) {
+                save();
             }
-        }catch (Exception e) {
+            wait(5000);
+        } catch (Exception e) {
+
             _retVal = "";
             lblTime.setText("");
+            e.printStackTrace();
         }
     }
 
@@ -111,4 +125,107 @@ public class HomeActivity extends AppCompatActivity {
         Log.d(TAG, "onBackPressed: Clicked");
         moveTaskToBack(true);
     }
+
+    private void save() {
+        FileOutputStream fos = null;
+        try
+        {
+            String timeTxt = _retVal;
+
+            fos = openFileOutput(FILE_NAME, MODE_PRIVATE);
+            fos.write(timeTxt.getBytes());
+            Toast.makeText(HomeActivity.this, "Save to " + getFilesDir() + "/" + FILE_NAME, Toast.LENGTH_LONG).show();
+        }catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }catch (IOException e) {
+            e.printStackTrace();
+        } catch(Exception e) {
+            e.printStackTrace();
+        } finally {
+            if(fos != null) {
+                try
+                {
+                    fos.close();
+                }catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+    }
+    private void load(){
+        FileInputStream fis = null;
+
+        try {
+            Log.d("TAG2", "load: " + _retVal);
+            if(cookingStatus.equals("true")) {
+                fis = openFileInput(FILE_NAME);
+                InputStreamReader isr = new InputStreamReader(fis);
+                BufferedReader rdr = new BufferedReader(isr);
+                StringBuilder stringBuilder = new StringBuilder();
+                String timeTxt;
+
+                while((timeTxt = rdr.readLine()) != null) {
+                    stringBuilder.append(timeTxt).append("");
+                }
+                Log.d("TAG2", "load: " + stringBuilder.toString());
+                lblTime.setText(stringBuilder.toString());
+                btn1.setEnabled(false);
+            }
+            else {
+                btn1.setEnabled(true);
+            }
+
+        }catch (FileNotFoundException e){
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if(fis != null) {
+                try {
+                    fis.close();
+                }catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    private void waitForResponse() {
+        final String[] d = {"true"};
+        try {
+            Thread UIThread = new HandlerThread("UIHandler"){
+                @Override
+                public void run() {
+                    try {
+                        try {
+                            String arToken = "~XFt2FmYgf3dxKTdZpb3CuCZJRTq4Z55FkNSJwQwFry1A64iEvchIs3WTKXezEFh4j";
+                            VariableDto v = new VariableDto();
+                            v.setName("riceCookerStatus");
+                            v.setType(VariableDto.TypeEnum.BOOLEAN);
+                            List<VariableDto> list = getVariableApi().getVariables(arToken);
+                            d[0] = getVariableApi().getVariableTextValue(v.getName(), v.getType().toString(), arToken);
+                            Log.d("TAG1", "run: " + d[0]);
+
+                            cookingStatus = d[0];
+                            latch.countDown();
+
+                        }catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            };
+
+            UIThread.start();
+            latch.await();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 }
