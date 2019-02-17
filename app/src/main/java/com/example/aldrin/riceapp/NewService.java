@@ -116,6 +116,51 @@ public class NewService extends IntentService {
         return START_STICKY;
     }
 
+
+
+    @Override
+    protected void onHandleIntent(@Nullable Intent intent) {
+
+        synchronized (this) {
+            int count = 0;
+            final String[] d = {"1"};
+            while(!d[0].equals("0")) {
+                try {
+                    Thread thread = new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            try {
+                                String arToken = "~XFt2FmYgf3dxKTdZpb3CuCZJRTq4Z55FkNSJwQwFry1A64iEvchIs3WTKXezEFh4j";
+                                VariableDto v = new VariableDto();
+                                v.setName("cookerStatus");
+                                v.setType(VariableDto.TypeEnum.INTEGER);
+                                List<VariableDto> list = getVariableApi().getVariables(arToken);
+//                                Thread.sleep(5000);
+                                d[0] = getVariableApi().getVariableTextValue(v.getName(), v.getType().toString(), arToken);
+
+                                Log.d("TAG1", "run: " + d[0]);
+                            } catch (ApiException e) {
+                                e.printStackTrace();
+                                Log.d("NewService 1", "run: error " + e.toString());
+                            }
+                        }
+                    });
+                    thread.start();
+                    wait(5000);
+                    count++;
+                }catch (InterruptedException e) {
+                    e.printStackTrace();
+                    Log.d("NewService 3", "onHandleIntent: error " + e.toString());
+                }
+            }
+
+            intent = new Intent(NewService.this, AlarmActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+            startActivity(intent);
+        }
+    }
     protected static ArliterestvariablesApi getVariableApi() {
         if (variableApi == null) {
             variableApi = new ArliterestvariablesApi();
@@ -149,6 +194,50 @@ public class NewService extends IntentService {
         notification.flags = notification.flags | Notification.FLAG_NO_CLEAR;     // NO_CLEAR makes the notification stay when the user performs a "delete all" command
         startForeground(NOTIFICATION_ID, notification);
 //        waitForResponse();
+    }
+
+    private void waitForResponse() {
+
+        synchronized (this) {
+            int count = 0;
+            final String[] d = {"1"};
+            while(!d[0].equals("0")) {
+                try {
+                    Thread thread = new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            try {
+                                String arToken = "~XFt2FmYgf3dxKTdZpb3CuCZJRTq4Z55FkNSJwQwFry1A64iEvchIs3WTKXezEFh4j";
+                                VariableDto v = new VariableDto();
+                                v.setName("cookerStatus");
+                                v.setType(VariableDto.TypeEnum.INTEGER);
+                                List<VariableDto> list = getVariableApi().getVariables(arToken);
+//                                Thread.sleep(5000);
+                                d[0] = getVariableApi().getVariableTextValue(v.getName(), v.getType().toString(), arToken);
+
+                                Log.d("TAG1", "run: " + d[0]);
+                            } catch (ApiException e) {
+                                e.printStackTrace();
+                                Log.d("NewService 1", "run: error " + e.toString());
+                            }
+                        }
+                    });
+                    thread.start();
+                    this.wait(8000);
+                    count++;
+                }catch (InterruptedException e) {
+                    e.printStackTrace();
+                    Log.d("NewService 3", "onHandleIntent: error " + e.toString());
+                }
+            }
+
+//            stopMyService();
+//            Intent intent = new Intent(NewService.this, AlarmActivity.class);
+//            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//            intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+//            startActivity(intent);
+        }
     }
 
     void stopMyService() {
