@@ -7,4 +7,6 @@
     <color name="colorLabel">#D3D3D3</color>
     <color name="colorStandby">#eefc31</color>
     <color name="colorCooking">#ff4542</color>
+    <color name="colorPrepare">#EE9A00</color>
+    <color name="colorCookStart">#98FB98</color>
 </resources>

@@ -36,11 +36,12 @@ public class HomeActivity extends AppCompatActivity {
     private static final String TAG = HomeActivity.class.getName();
     private static final String FILE_NAME = "example.txt";
     private Button btn1;
-    private TextView lblTime;
+    private TextView lblTime, lblMachineStatus;
     private Bundle bundle;
     private String _retVal, cookingStatus;
     private static ArliterestvariablesApi variableApi;
     private final CountDownLatch latch = new CountDownLatch(1);
+    private static boolean isRecursionEnable = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,7 +51,7 @@ public class HomeActivity extends AppCompatActivity {
         setViewIds();
         waitForResponse();
         setData();
-        load();
+        runInBackground();
 
         btn1.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -64,6 +65,7 @@ public class HomeActivity extends AppCompatActivity {
         Log.d(TAG, "setViewIds: Created");
         btn1 = findViewById(R.id.btnRiceAmount);
         lblTime = findViewById(R.id.lblCookLabel);
+        lblMachineStatus = findViewById(R.id.lblMachineStatus);
     }
     private void setData() {
         try{
@@ -131,7 +133,6 @@ public class HomeActivity extends AppCompatActivity {
         try
         {
             String timeTxt = _retVal;
-
             fos = openFileOutput(FILE_NAME, MODE_PRIVATE);
             fos.write(timeTxt.getBytes());
             Toast.makeText(HomeActivity.this, "Save to " + getFilesDir() + "/" + FILE_NAME, Toast.LENGTH_LONG).show();
@@ -154,43 +155,7 @@ public class HomeActivity extends AppCompatActivity {
 
     }
     private void load(){
-        FileInputStream fis = null;
 
-        try {
-            Log.d("TAG2", "load: " + _retVal);
-            if(cookingStatus.equals("true")) {
-                fis = openFileInput(FILE_NAME);
-                InputStreamReader isr = new InputStreamReader(fis);
-                BufferedReader rdr = new BufferedReader(isr);
-                StringBuilder stringBuilder = new StringBuilder();
-                String timeTxt;
-
-                while((timeTxt = rdr.readLine()) != null) {
-                    stringBuilder.append(timeTxt).append("");
-                }
-                Log.d("TAG2", "load: " + stringBuilder.toString());
-                lblTime.setText(stringBuilder.toString());
-                btn1.setEnabled(false);
-            }
-            else {
-                btn1.setEnabled(true);
-            }
-
-        }catch (FileNotFoundException e){
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            if(fis != null) {
-                try {
-                    fis.close();
-                }catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
     }
 
     private void waitForResponse() {
@@ -203,11 +168,11 @@ public class HomeActivity extends AppCompatActivity {
                         try {
                             String arToken = "~XFt2FmYgf3dxKTdZpb3CuCZJRTq4Z55FkNSJwQwFry1A64iEvchIs3WTKXezEFh4j";
                             VariableDto v = new VariableDto();
-                            v.setName("riceCookerStatus");
-                            v.setType(VariableDto.TypeEnum.BOOLEAN);
+                            v.setName("cookerStatus");
+                            v.setType(TypeEnum.INTEGER);
                             List<VariableDto> list = getVariableApi().getVariables(arToken);
                             d[0] = getVariableApi().getVariableTextValue(v.getName(), v.getType().toString(), arToken);
-                            Log.d("TAG1", "run: " + d[0]);
+//                            Log.d("TAG1", "run: " + d[0]);
 
                             cookingStatus = d[0];
                             latch.countDown();
@@ -227,5 +192,104 @@ public class HomeActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
+    void runInBackground() {
+        if (!isRecursionEnable)
+            return;    // Handle not to start multiple parallel threads
 
+        // isRecursionEnable = false; when u want to stop
+        // on exception on thread make it true again
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                // DO your work here
+                // get the data
+                FileInputStream fis = null;
+
+
+                try {
+//                    Log.d("TAG2", "load: " + _retVal);
+                    fis = openFileInput(FILE_NAME);
+                    InputStreamReader isr = new InputStreamReader(fis);
+                    BufferedReader rdr = new BufferedReader(isr);
+                    StringBuilder stringBuilder = new StringBuilder();
+                    String timeTxt;
+
+                    if(cookingStatus.equals("2")) {
+                        while((timeTxt = rdr.readLine()) != null) {
+                            stringBuilder.append(timeTxt).append("");
+                        }
+//                        Log.d("TAG2", "load: " + stringBuilder.toString());
+                        lblTime.setText(stringBuilder.toString());
+
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                //uddate UI
+                                lblMachineStatus.setText("PREPARING");
+                                lblMachineStatus.setBackgroundColor(getResources().getColor(R.color.colorPrepare));
+                                btn1.setEnabled(false);
+                                runInBackground();
+                            }
+                        });
+
+                    } else if(cookingStatus.equals("1")) {
+                        while((timeTxt = rdr.readLine()) != null) {
+                            stringBuilder.append(timeTxt).append("");
+                        }
+//                        Log.d("TAG2", "load: " + stringBuilder.toString());
+                        lblTime.setText(stringBuilder.toString());
+
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                //uddate UI
+                                lblMachineStatus.setText("COOKING");
+                                lblMachineStatus.setBackgroundColor(getResources().getColor(R.color.colorCookStart));
+                                btn1.setEnabled(false);
+                                runInBackground();
+                            }
+                        });
+                    }
+                    else {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                //uddate UI
+                                lblTime.setText("");
+                                lblMachineStatus.setText("ON STANDBY");
+                                lblMachineStatus.setBackgroundColor(getResources().getColor(R.color.colorStandby));
+                                btn1.setEnabled(true);
+                                runInBackground();
+                            }
+                        });
+                    }
+//                    if () {
+//                        runOnUiThread(new Runnable() {
+//                            @Override
+//                            public void run() {
+//                                //uddate UI
+//                                runInBackground();
+//                            }
+//                        });
+//                    } else {
+//                        runInBackground();
+//                    }
+                }catch (FileNotFoundException e){
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    if(fis != null) {
+                        try {
+                            fis.close();
+                        }catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+        }).start();
+    }
 }

@@ -79,27 +79,27 @@
                 android:background="@color/colorStandby"
                 />
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="10dp"
-                android:text="@string/riceLevel"
-                android:textSize="30sp"
-                android:textColor="@color/colorPrimaryDark"
-                android:gravity="center"
-                />
+            <!--<TextView-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:layout_margin="10dp"-->
+                <!--android:text="@string/riceLevel"-->
+                <!--android:textSize="30sp"-->
+                <!--android:textColor="@color/colorPrimaryDark"-->
+                <!--android:gravity="center"-->
+                <!--/>-->
 
-            <TextView
-                android:id="@+id/lblRiceLevel"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/lowStatus1"
-                android:textSize="30sp"
-                android:gravity="center"
-                android:textColor="@color/milkWhite"
-                android:background="@color/colorCooking"
-                android:textStyle="bold"
-                />
+            <!--<TextView-->
+                <!--android:id="@+id/lblRiceLevel"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:text="@string/lowStatus1"-->
+                <!--android:textSize="30sp"-->
+                <!--android:gravity="center"-->
+                <!--android:textColor="@color/milkWhite"-->
+                <!--android:background="@color/colorCooking"-->
+                <!--android:textStyle="bold"-->
+                <!--/>-->
         </LinearLayout>
 
     </ScrollView>

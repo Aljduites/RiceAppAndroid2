@@ -1,6 +1,7 @@
 package com.example.aldrin.riceapp;
 
 import android.app.AlertDialog;
+import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -8,9 +9,11 @@ import android.os.HandlerThread;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Layout;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
@@ -27,16 +30,21 @@ import org.remoteme.client.model.VariableDto;
 import org.remoteme.client.model.VariableSchedulerEntityDto;
 
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 
-public class SetTimeActivity extends AppCompatActivity implements TimePickerDialog.OnTimeSetListener {
+public class SetTimeActivity extends AppCompatActivity implements TimePickerDialog.OnTimeSetListener, MyEventListener {
 
     private static final String TAG = SetTimeActivity.class.getName();
+    private static final int FIVE_MINUTES = 5 * 60 * 1000;
+    private RelativeLayout loadingPanel;
     private Button btnSetTime, btnCancel, btnOk;
     private TextView lblTime;
     private String _retVal;
@@ -81,32 +89,81 @@ public class SetTimeActivity extends AppCompatActivity implements TimePickerDial
         btnOk.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                builder1.setMessage("Are you sure?");
-                builder1.setCancelable(true);
+                long currentTime1 = System.currentTimeMillis() + FIVE_MINUTES;
 
-                builder1.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        isConnected();
+                //Format of the date defined in the input String
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTimeInMillis(currentTime1);
+                DateFormat timeformat = new SimpleDateFormat("hh:mm aa", Locale.US);
+
+                Date date = null;
+                Date date2 = null;
+
+                try {
+                    date = timeformat.parse(lblTime.getText().toString());
+                    String temp1 = timeformat.format(calendar.getTime());
+                    date2 = timeformat.parse(temp1);
+
+//                    Log.d("testa", String.valueOf(date.getTime()));
+//                    Log.d("testb", String.valueOf(date2.getTime()));
+
+                    if(date.getTime() < date2.getTime()) {
+                        builder1.setMessage("Time set must be more than 5 minutes");
+                        builder1.setCancelable(true);
+
+                        builder1.setPositiveButton("Close", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                dialogInterface.cancel();
+                            }
+                        });
+
+                        builder1.setNegativeButton("Ok", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                dialogInterface.cancel();
+                            }
+                        });
+
+                        if(lblTime.getText().toString().isEmpty()) {
+                            Toast.makeText(SetTimeActivity.this, "Please set cook time.", Toast.LENGTH_LONG).show();
+                        }
+                        else{
+                            alertDialog = builder1.create();
+                            alertDialog.show();
+                        }
+                    } else {
+                        builder1.setMessage("Are you sure?");
+                        builder1.setCancelable(true);
+
+                        builder1.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                loadingPanel.setVisibility(View.VISIBLE);
+                                isConnected();
+
+                            }
+                        });
+
+                        builder1.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                dialogInterface.cancel();
+                            }
+                        });
+
+                        if(lblTime.getText().toString().isEmpty()) {
+                            Toast.makeText(SetTimeActivity.this, "Please set cook time.", Toast.LENGTH_LONG).show();
+                        }
+                        else{
+                            alertDialog = builder1.create();
+                            alertDialog.show();
+                        }
 
                     }
-                });
-
-                builder1.setNegativeButton("No", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        dialogInterface.cancel();
-                    }
-                });
-
-                if(lblTime.getText().toString().isEmpty()) {
-                    Toast.makeText(SetTimeActivity.this, "Please set cook time.", Toast.LENGTH_LONG).show();
+                } catch (ParseException e) {
+                    e.printStackTrace();
                 }
-                else{
-                    alertDialog = builder1.create();
-                    alertDialog.show();
-                }
-
             }
         });
     }
@@ -178,6 +235,7 @@ public class SetTimeActivity extends AppCompatActivity implements TimePickerDial
 
     private void setViewIds() {
         Log.d(TAG, "setViewIds: Created");
+        loadingPanel = findViewById(R.id.loadingPanel2);
         btnSetTime = findViewById(R.id.btnTimePicker);
         btnOk = findViewById(R.id.btnOkTime);
         btnCancel = findViewById(R.id.btnCancelTime);
@@ -185,17 +243,19 @@ public class SetTimeActivity extends AppCompatActivity implements TimePickerDial
         bundle = getIntent().getExtras();
         _retVal = bundle.getString("key");
         builder1 = new AlertDialog.Builder(SetTimeActivity.this);
+        Log.d("VALUE", "setViewIds: " + _retVal);
 //        relativeLayout = findViewById(R.id.loadingPanel);
     }
 
     public void startService() {
-        Intent intent = new Intent(SetTimeActivity.this, NewService.class);
-        Bundle bundle = new Bundle();
-
-        bundle.putString("serviceTime", lblTime.getText().toString());
-        intent.putExtras(bundle);
-        startService(intent);
-        openHome();
+        new MyAsyncTask(lblTime.getText().toString(), _retVal,SetTimeActivity.this).execute();
+//        Intent intent = new Intent(SetTimeActivity.this, NewService.class);
+//        Bundle bundle = new Bundle();
+//
+//        bundle.putString("serviceTime", lblTime.getText().toString());
+//        intent.putExtras(bundle);
+//        startService(intent);
+//        openHome();
     }
 
     @Override
@@ -238,7 +298,7 @@ public class SetTimeActivity extends AppCompatActivity implements TimePickerDial
         intent.putExtras(bundle);
 
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        sendSetTime(lblTime.getText().toString());
+//        sendSetTime(lblTime.getText().toString());
         startActivity(intent);
     }
 
@@ -251,156 +311,6 @@ public class SetTimeActivity extends AppCompatActivity implements TimePickerDial
         v.setType(type);
         getVariableApi().createVariable(v,arToken);
         return v;
-    }
-
-    private void sendSetTime(String time) {
-        final String time1 = time;
-//        try {
-//            Thread UIThread1 = new HandlerThread("UIHandler1"){
-//                @Override
-//                public void run() {
-//                    try {
-//                        try {
-//                            String arToken = "~XFt2FmYgf3dxKTdZpb3CuCZJRTq4Z55FkNSJwQwFry1A64iEvchIs3WTKXezEFh4j";
-//                            Date today = new Date();
-//                            VariableDto v = new VariableDto();
-//                            v.setName("button1");
-//                            v.setType(TypeEnum.BOOLEAN);
-//
-//                            //Format of the date defined in the input String
-//                            DateFormat timeformat = new SimpleDateFormat("hh:mm aa", Locale.US);
-//                            DateFormat dateFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss 'GMT'z yyyy", Locale.US);
-//                            //Desired format: 24 hour format: Change the pattern as per the need
-//                            DateFormat outputformat = new SimpleDateFormat("HH:mm", Locale.US);
-//                            DateFormat dateOutput = new SimpleDateFormat("dd.MM.yyyy", Locale.US);
-//                            Date date = null;
-//                            Date date2 = null;
-//                            String output = null;
-//                            String output2 = null;
-//
-//                            date= timeformat.parse(time1);
-//                            date2 = dateFormat.parse(today.toString());
-//                            //Changing the format of date and storing it in String
-//                            output = outputformat.format(date);
-//                            output2 = dateOutput.format(date2);
-//
-//                            // get schedulers
-//                            List<VariableSchedulerEntityDto> schedulers = getVariableApi().getSchedulers(v.getName(), v.getType().toString(), arToken);
-//                            //get variable
-//                            List<VariableDto> variables = getVariableApi().getVariables(arToken);
-//                            String textValue = getVariableApi().getVariableTextValue("button1", "BOOLEAN", arToken);
-//
-//                            VariableSchedulerDto scheduler = new VariableSchedulerDto();
-//                            scheduler.setCron("");
-//                            scheduler.setMode(ModeEnum.TIME);
-//                            scheduler.setTime(output2 + " " + output);
-//                            scheduler.setValues(Arrays.asList("true"));
-//
-//                            Log.d(TAG + " Date: ", output2 + " " + output);
-//
-//                            if(schedulers.isEmpty()) {
-//                                getVariableApi().setVariableTextValue("false", v.getName(), v.getType().toString(), arToken);
-//                                getVariableApi().addScheduler(scheduler,v.getName(),v.getType().toString(),arToken);
-//                                Log.d(TAG + " Tested1", "Success1");
-//                            }
-//                            else {
-//                                // get schedulers
-//                                schedulers = getVariableApi().getSchedulers(v.getName(), v.getType().toString(), arToken);
-//
-//                                getVariableApi().setVariableTextValue("false", v.getName(), v.getType().toString(), arToken);
-//                                scheduler.setTime(output2 + " " + output);
-//                                getVariableApi().updateScheduler(scheduler, schedulers.get(0).getVariableSchedulerId(), arToken);
-//                                Log.d(TAG + " Tested2", "Success2");
-//                            }
-//
-//    //                        Log.d(TAG + " Testing", textValue);
-//    //                        Log.d(TAG + " Testing1: ", schedulers.get(0).getTime());
-//                            } catch (Exception e) {
-//                                e.printStackTrace();
-//                            }
-//                        } catch (Exception e) {
-//                            e.printStackTrace();
-//                        }
-//                    };
-//            };
-//            UIThread1.start();
-//            latch1.await();
-//        }catch (Exception e) {
-//
-//        }
-        Thread thread = new Thread(new Runnable(){
-            public void run() {
-                try {
-                    try {
-                        String arToken = "~XFt2FmYgf3dxKTdZpb3CuCZJRTq4Z55FkNSJwQwFry1A64iEvchIs3WTKXezEFh4j";
-                        Date today = new Date();
-                        VariableDto v = new VariableDto();
-                        v.setName("cookTime");
-                        v.setType(TypeEnum.INTEGER_BOOLEAN);
-
-                        VariableDto cookStatus = new VariableDto();
-                        cookStatus.setName("riceCookerStatus");
-                        cookStatus.setType(TypeEnum.BOOLEAN);
-
-                        //Format of the date defined in the input String
-                        DateFormat timeformat = new SimpleDateFormat("hh:mm aa", Locale.US);
-                        DateFormat dateFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss 'GMT'z yyyy", Locale.US);
-                        //Desired format: 24 hour format: Change the pattern as per the need
-                        DateFormat outputformat = new SimpleDateFormat("HH:mm", Locale.US);
-                        DateFormat dateOutput = new SimpleDateFormat("dd.MM.yyyy", Locale.US);
-                        Date date = null;
-                        Date date2 = null;
-                        String output = null;
-                        String output2 = null;
-
-                        date= timeformat.parse(time1);
-                        date2 = dateFormat.parse(today.toString());
-                        //Changing the format of date and storing it in String
-                        output = outputformat.format(date);
-                        output2 = dateOutput.format(date2);
-
-                        // get schedulers
-                        List<VariableSchedulerEntityDto> schedulers = getVariableApi().getSchedulers(v.getName(), v.getType().toString(), arToken);
-                        //get variable
-                        //List<VariableDto> variables = getVariableApi().getVariables(arToken);
-                        //String textValue = getVariableApi().getVariableTextValue("cookTime", "BOOLEAN", arToken);
-
-                        VariableSchedulerDto scheduler = new VariableSchedulerDto();
-                        scheduler.setCron("");
-                        scheduler.setMode(ModeEnum.TIME);
-                        scheduler.setTime(output2 + " " + output);
-                        scheduler.setValues(Arrays.asList(_retVal + ",true"));
-
-                        Log.d(TAG + " Date: ", output2 + " " + output);
-
-                        if(schedulers.isEmpty()) {
-                            getVariableApi().setVariableTextValue("0,false", v.getName(), v.getType().toString(), arToken);
-                            getVariableApi().setVariableTextValue("false", cookStatus.getName(), cookStatus.getType().toString(), arToken);
-                            getVariableApi().addScheduler(scheduler,v.getName(),v.getType().toString(),arToken);
-                            Log.d(TAG + " Tested1", "Success1");
-                        }
-                        else {
-                            // get schedulers
-                            schedulers = getVariableApi().getSchedulers(v.getName(), v.getType().toString(), arToken);
-
-                            getVariableApi().setVariableTextValue("0,false", v.getName(), v.getType().toString(), arToken);
-                            scheduler.setTime(output2 + " " + output);
-                            getVariableApi().updateScheduler(scheduler, schedulers.get(0).getVariableSchedulerId(), arToken);
-                            Log.d(TAG + " Tested2", "Success2");
-                        }
-
-//                        Log.d(TAG + " Testing", textValue);
-//                        Log.d(TAG + " Testing1: ", schedulers.get(0).getTime());
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                } catch (Exception e) {
-                        e.printStackTrace();
-                }
-            }
-        });
-
-        thread.start();
     }
 
     protected static ArliterestvariablesApi getVariableApi() {
@@ -417,5 +327,34 @@ public class SetTimeActivity extends AppCompatActivity implements TimePickerDial
 
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
+    }
+
+    @Override
+    public void EventComplete() {
+        Intent intent = new Intent(getBaseContext(), NewService.class);
+        Bundle bundle = new Bundle();
+
+        Log.d(TAG + " EventComplete: ", "Completed");
+        bundle.putString("serviceTime", lblTime.getText().toString());
+        intent.putExtras(bundle);
+        intent.setAction("startService");
+        startService(intent);
+        openHome();
+    }
+
+    @Override
+    public void EventFailed() {
+        builder1.setMessage("Something went wrong. Please try again later.");
+        builder1.setCancelable(true);
+
+        builder1.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                Log.d(TAG + " EventFailed: ", "Error");
+            }
+        });
+
+        alertDialog = builder1.create();
+        alertDialog.show();
     }
 }

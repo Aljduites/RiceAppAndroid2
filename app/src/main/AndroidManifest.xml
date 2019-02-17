@@ -24,7 +24,7 @@
         <activity android:name=".SetTimeActivity" />
         <activity android:name=".AlarmActivity"></activity>
 
-        <service android:name=".NewService" android:exported="false" />
+        <service android:name="com.example.aldrin.riceapp.NewService" android:exported="false" android:process=":ServiceProcess" />
         <receiver android:name=".AlarmService" />
     </application>
 
