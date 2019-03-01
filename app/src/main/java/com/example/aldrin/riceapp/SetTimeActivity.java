@@ -1,6 +1,7 @@
 package com.example.aldrin.riceapp;
 
 import android.app.AlertDialog;
+import android.app.DatePickerDialog;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.DialogInterface;
@@ -13,6 +14,7 @@ import android.text.Layout;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.TimePicker;
@@ -21,6 +23,7 @@ import android.widget.Toast;
 import okhttp3.OkHttpClient;
 import okhttp3.WebSocket;
 
+import org.joda.time.DateTime;
 import org.remoteme.client.api.ArliterestvariablesApi;
 import org.remoteme.client.model.VariableSchedulerDto;
 import org.remoteme.client.model.VariableSchedulerDto.ModeEnum;
@@ -45,8 +48,8 @@ public class SetTimeActivity extends AppCompatActivity implements TimePickerDial
     private static final String TAG = SetTimeActivity.class.getName();
     private static final int FIVE_MINUTES = 5 * 60 * 1000;
     private RelativeLayout loadingPanel;
-    private Button btnSetTime, btnCancel, btnOk;
-    private TextView lblTime;
+    private Button btnSetTime, btnCancel, btnOk, btnToday, btnTom, btnCustom;
+    private TextView lblTime, lblCookDate;
     private String _retVal;
     private Intent intent;
     private Bundle bundle;
@@ -59,6 +62,9 @@ public class SetTimeActivity extends AppCompatActivity implements TimePickerDial
     private final CountDownLatch latch = new CountDownLatch(1);
     private final CountDownLatch latch1 = new CountDownLatch(1);
     private ConnectionDetector connectionDetector;
+
+    private Calendar dateSelected = Calendar.getInstance();
+    private DatePickerDialog datePickerDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,20 +92,112 @@ public class SetTimeActivity extends AppCompatActivity implements TimePickerDial
             }
         });
 
+        btnToday.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                try {
+                    Date today = new Date();
+                    DateFormat dateFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss 'GMT'z yyyy", Locale.US);
+                    DateFormat dateOutput = new SimpleDateFormat("dd.MM.yyyy", Locale.US);
+                    Date date2 = null;
+                    String output2 = null;
+                    date2 = dateFormat.parse(today.toString());
+                    output2 = dateOutput.format(date2);
+                    lblCookDate.setText(output2);
+                    btnSetTime.setEnabled(true);
+
+                } catch (ParseException e) {
+                    Log.d("TodayError", e.toString());
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        btnTom.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try{
+                    Date today = new Date();
+                    DateFormat dateFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss 'GMT'z yyyy", Locale.US);
+                    DateFormat dateOutput = new SimpleDateFormat("dd.MM.yyyy", Locale.US);
+                    Date date2 = null;
+                    String output2 = null;
+                    date2 = dateFormat.parse(today.toString());
+
+                    Calendar c = Calendar.getInstance();
+                    c.setTime(dateFormat.parse(date2.toString()));
+                    c.add(Calendar.DATE, 1);  // number of days to add
+                    String temp = dateOutput.format(c.getTime());
+
+
+                    lblCookDate.setText(temp);
+                    btnSetTime.setEnabled(true);
+
+                }catch (Exception e){
+                    Log.d("DateError", e.toString());
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        btnCustom.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try{
+                    int day = dateSelected.get(Calendar.DAY_OF_MONTH);
+                    int month = dateSelected.get(Calendar.MONTH);
+                    int year = dateSelected.get(Calendar.YEAR);
+
+                    datePickerDialog = new DatePickerDialog(SetTimeActivity.this, new DatePickerDialog.OnDateSetListener() {
+                        @Override
+                        public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
+                            lblCookDate.setText((dayOfMonth < 10 ? "0" + dayOfMonth : dayOfMonth)+ "." + (month < 10 ? "0" + (month + 1) : month + 1) + "." + year);
+                            btnSetTime.setEnabled(true);
+                        }
+                    }, year, month, day);
+                    datePickerDialog.show();
+                }catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
         btnOk.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                long currentTime1 = System.currentTimeMillis() + FIVE_MINUTES;
 
-                //Format of the date defined in the input String
-                Calendar calendar = Calendar.getInstance();
-                calendar.setTimeInMillis(currentTime1);
-                DateFormat timeformat = new SimpleDateFormat("hh:mm aa", Locale.US);
-
-                Date date = null;
-                Date date2 = null;
 
                 try {
+
+                    //------------------Today---------------------
+                    Date today = new Date();
+                    DateFormat dateFormat1 = new SimpleDateFormat("EEE MMM dd HH:mm:ss 'GMT'z yyyy", Locale.US);
+                    DateFormat dateOutput1 = new SimpleDateFormat("dd.MM.yyyy", Locale.US);
+                    Date date3 = null;
+                    String output3 = null;
+                    date3 = dateFormat1.parse(today.toString());
+                    output3 = dateOutput1.format(date3);
+                    //--------------------------------------------
+                    //----------------Tomorrow-----------------------
+                    Date date4 = null;
+                    String output4 = null;
+                    date4 = dateFormat1.parse(today.toString());
+
+                    Calendar c1 = Calendar.getInstance();
+                    c1.setTime(dateFormat1.parse(date4.toString()));
+                    c1.add(Calendar.DATE, 1);  // number of days to add
+                    String temp = dateOutput1.format(c1.getTime());
+                    //-----------------------------------------------
+
+                    long currentTime1 = System.currentTimeMillis() + FIVE_MINUTES;
+
+                    //Format of the date defined in the input String
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.setTimeInMillis(currentTime1);
+                    DateFormat timeformat = new SimpleDateFormat("hh:mm aa", Locale.US);
+
+                    Date date = null;
+                    Date date2 = null;
                     date = timeformat.parse(lblTime.getText().toString());
                     String temp1 = timeformat.format(calendar.getTime());
                     date2 = timeformat.parse(temp1);
@@ -107,30 +205,61 @@ public class SetTimeActivity extends AppCompatActivity implements TimePickerDial
 //                    Log.d("testa", String.valueOf(date.getTime()));
 //                    Log.d("testb", String.valueOf(date2.getTime()));
 
-                    if(date.getTime() < date2.getTime()) {
-                        builder1.setMessage("Time set must be more than 5 minutes");
-                        builder1.setCancelable(true);
+                    //Today
+                    if(output3.equals(lblCookDate.getText().toString())) {
+                        if(date.getTime() < date2.getTime()) {
+                            builder1.setMessage("Time set must be more than 5 minutes");
+                            builder1.setCancelable(true);
 
-                        builder1.setPositiveButton("Close", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                dialogInterface.cancel();
+                            builder1.setPositiveButton("Close", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    dialogInterface.cancel();
+                                }
+                            });
+
+                            builder1.setNegativeButton("Ok", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    dialogInterface.cancel();
+                                }
+                            });
+
+                            if(lblTime.getText().toString().isEmpty()) {
+                                Toast.makeText(SetTimeActivity.this, "Please set cook time.", Toast.LENGTH_LONG).show();
                             }
-                        });
-
-                        builder1.setNegativeButton("Ok", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                dialogInterface.cancel();
+                            else{
+                                alertDialog = builder1.create();
+                                alertDialog.show();
                             }
-                        });
+                        } else {
+                            builder1.setMessage("Are you sure?");
+                            builder1.setCancelable(true);
 
-                        if(lblTime.getText().toString().isEmpty()) {
-                            Toast.makeText(SetTimeActivity.this, "Please set cook time.", Toast.LENGTH_LONG).show();
-                        }
-                        else{
-                            alertDialog = builder1.create();
-                            alertDialog.show();
+                            builder1.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    loadingPanel.setVisibility(View.VISIBLE);
+                                    isConnected();
+
+                                }
+                            });
+
+                            builder1.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    dialogInterface.cancel();
+                                }
+                            });
+
+                            if(lblTime.getText().toString().isEmpty()) {
+                                Toast.makeText(SetTimeActivity.this, "Please set cook time.", Toast.LENGTH_LONG).show();
+                            }
+                            else{
+                                alertDialog = builder1.create();
+                                alertDialog.show();
+                            }
+
                         }
                     } else {
                         builder1.setMessage("Are you sure?");
@@ -159,8 +288,9 @@ public class SetTimeActivity extends AppCompatActivity implements TimePickerDial
                             alertDialog = builder1.create();
                             alertDialog.show();
                         }
-
                     }
+
+
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
@@ -228,18 +358,17 @@ public class SetTimeActivity extends AppCompatActivity implements TimePickerDial
         }
     }
 
-    private String getTextValue() {
-        return textValue;
-    }
-
-
     private void setViewIds() {
         Log.d(TAG, "setViewIds: Created");
         loadingPanel = findViewById(R.id.loadingPanel2);
         btnSetTime = findViewById(R.id.btnTimePicker);
         btnOk = findViewById(R.id.btnOkTime);
         btnCancel = findViewById(R.id.btnCancelTime);
+        btnToday = findViewById(R.id.btnToday);
+        btnTom = findViewById(R.id.btnTomorrow);
+        btnCustom = findViewById(R.id.btnCustom);
         lblTime = findViewById(R.id.lblCookSetTime);
+        lblCookDate = findViewById(R.id.lblCookDate);
         bundle = getIntent().getExtras();
         _retVal = bundle.getString("key");
         builder1 = new AlertDialog.Builder(SetTimeActivity.this);
@@ -248,7 +377,7 @@ public class SetTimeActivity extends AppCompatActivity implements TimePickerDial
     }
 
     public void startService() {
-        new MyAsyncTask(lblTime.getText().toString(), _retVal,SetTimeActivity.this).execute();
+        new MyAsyncTask(lblTime.getText().toString(), _retVal, lblCookDate.getText().toString(),SetTimeActivity.this).execute();
 //        Intent intent = new Intent(SetTimeActivity.this, NewService.class);
 //        Bundle bundle = new Bundle();
 //
@@ -345,16 +474,24 @@ public class SetTimeActivity extends AppCompatActivity implements TimePickerDial
     @Override
     public void EventFailed() {
         builder1.setMessage("Something went wrong. Please try again later.");
-        builder1.setCancelable(true);
+//        builder1.setCancelable(false);
 
-        builder1.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+        builder1.setPositiveButton("Try again", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 Log.d(TAG + " EventFailed: ", "Error");
+//                loadingPanel.setVisibility(View.GONE);
+                new MyAsyncTask(lblTime.getText().toString(), _retVal, lblCookDate.getText().toString(),SetTimeActivity.this).execute();
             }
         });
 
         alertDialog = builder1.create();
+        alertDialog.setOnShowListener(new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(DialogInterface dialog) {
+                ((AlertDialog)dialog).getButton(AlertDialog.BUTTON_NEGATIVE).setEnabled(false);
+            }
+        });
         alertDialog.show();
     }
 }

@@ -43,8 +43,10 @@ public class AlarmActivity extends AppCompatActivity {
                 RingtoneManager manager = new RingtoneManager(getApplicationContext());
                 manager.stopPreviousRingtone();
                 timer.cancel();
-                Intent intent = new Intent(AlarmActivity.this, HomeActivity.class);
-                startActivity(intent);
+                HomeActivity.isAlarmed = true;
+                finish();
+//                Intent intent = new Intent(AlarmActivity.this, HomeActivity.class);
+//                startActivity(intent);
 //                AlarmActivity.super.onBackPressed();
             }
         });

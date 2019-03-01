@@ -11,6 +11,7 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
+import android.view.View;
 
 import org.remoteme.client.api.ArliterestvariablesApi;
 import org.remoteme.client.invoker.ApiException;
@@ -29,9 +30,36 @@ public class NewService extends IntentService {
     static final int NOTIFICATION_ID = 543;
     private Timer timer = new Timer();
     final String[] d = {"1"};
+    private boolean isServiceRunning = false;
 
-    public static boolean isServiceRunning = false;
     public NewService() { super("MyWorkerThread"); }
+
+    @Override
+    public void onDestroy() {
+
+        super.onDestroy();
+        timer.cancel();
+        stopMyService();
+
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    String arToken = "~XFt2FmYgf3dxKTdZpb3CuCZJRTq4Z55FkNSJwQwFry1A64iEvchIs3WTKXezEFh4j";
+                    VariableDto cookStatus = new VariableDto();
+                    cookStatus.setName("cookerStatus");
+                    cookStatus.setType(VariableDto.TypeEnum.INTEGER);
+
+                    getVariableApi().setVariableTextValue("0", cookStatus.getName(), cookStatus.getType().toString(), arToken);
+                } catch (ApiException e) {
+                    Log.d("errorHere6", e.toString());
+                    e.printStackTrace();
+                }
+
+            }
+        });
+        thread.start();
+    }
 
     @Override
     public void onCreate() {
@@ -56,7 +84,7 @@ public class NewService extends IntentService {
                                     List<VariableDto> list = getVariableApi().getVariables(arToken);
 //                                Thread.sleep(5000);
                                     d[0] = getVariableApi().getVariableTextValue(v.getName(), v.getType().toString(), arToken);
-
+//                                    HomeActivity.isCook = Integer.parseInt(d[0]);
                                     Log.d("TAG1", "run: " + d[0]);
                                 }
                             } catch (ApiException e) {
@@ -77,6 +105,7 @@ public class NewService extends IntentService {
 
                         startActivity(intent);
                     }
+
                 }catch (Exception e) {
                     e.printStackTrace();
                     Log.d("NewService 3", "onHandleIntent: error " + e.toString());

@@ -28,7 +28,7 @@ public class CupsActivity extends AppCompatActivity {
         btn1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                relativeLayout.setVisibility(View.VISIBLE);
+//                relativeLayout.setVisibility(View.VISIBLE);
                 isConnected(btn1.getText().toString());
 //                openSetTimeActivity(btn1.getText().toString());
             }
@@ -37,7 +37,7 @@ public class CupsActivity extends AppCompatActivity {
         btn2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                relativeLayout.setVisibility(View.VISIBLE);
+//                relativeLayout.setVisibility(View.VISIBLE);
                 isConnected(btn2.getText().toString());
 //                openSetTimeActivity(btn2.getText().toString());
             }
@@ -46,7 +46,7 @@ public class CupsActivity extends AppCompatActivity {
         btn3.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                relativeLayout.setVisibility(View.VISIBLE);
+//                relativeLayout.setVisibility(View.VISIBLE);
                 isConnected(btn3.getText().toString());
 //                openSetTimeActivity(btn3.getText().toString());
             }
@@ -55,7 +55,7 @@ public class CupsActivity extends AppCompatActivity {
         btn4.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                relativeLayout.setVisibility(View.VISIBLE);
+//                relativeLayout.setVisibility(View.VISIBLE);
                 isConnected(btn4.getText().toString());
 //                openSetTimeActivity(btn4.getText().toString());
             }
@@ -64,20 +64,20 @@ public class CupsActivity extends AppCompatActivity {
         btn5.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                relativeLayout.setVisibility(View.VISIBLE);
+//                relativeLayout.setVisibility(View.VISIBLE);
                 isConnected(btn5.getText().toString());
 //                openSetTimeActivity(btn5.getText().toString());
             }
         });
 
-        btn6.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                relativeLayout.setVisibility(View.VISIBLE);
-                isConnected(btn6.getText().toString());
+//        btn6.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                relativeLayout.setVisibility(View.VISIBLE);
+//                isConnected(btn6.getText().toString());
 //                openSetTimeActivity(btn6.getText().toString());
-            }
-        });
+//            }
+//        });
 
         btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -90,9 +90,9 @@ public class CupsActivity extends AppCompatActivity {
     private void isConnected(String btn) {
         final String btns = btn;
         connectionDetector = new ConnectionDetector(CupsActivity.this);
-        relativeLayout.setVisibility(View.VISIBLE);
+//        relativeLayout.setVisibility(View.VISIBLE);
         if(!connectionDetector.isConnected()) {
-            relativeLayout.setVisibility(View.GONE);
+//            relativeLayout.setVisibility(View.GONE);
             builder1 = new AlertDialog.Builder(CupsActivity.this);
             builder1.setMessage("No connection found!");
             builder1.setCancelable(false);
@@ -109,7 +109,7 @@ public class CupsActivity extends AppCompatActivity {
             alertDialog.setIcon(R.drawable.icon);
             alertDialog.show();
         } else {
-            relativeLayout.setVisibility(View.GONE);
+//            relativeLayout.setVisibility(View.GONE);
             openSetTimeActivity(btns);
         }
     }
@@ -120,10 +120,10 @@ public class CupsActivity extends AppCompatActivity {
         btn3 = findViewById(R.id.btn3);
         btn4 = findViewById(R.id.btn4);
         btn5 = findViewById(R.id.btn5);
-        btn6 = findViewById(R.id.btn6);
+//        btn6 = findViewById(R.id.btn6);
         btnCancel = findViewById(R.id.btnCancel2);
-        relativeLayout = findViewById(R.id.loadingPanel1);
-        relativeLayout.setVisibility(View.GONE);
+//        relativeLayout = findViewById(R.id.loadingPanel1);
+//        relativeLayout.setVisibility(View.GONE);
     }
 
     private void openSetTimeActivity(String str) {

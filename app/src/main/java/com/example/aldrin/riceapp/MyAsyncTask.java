@@ -22,13 +22,13 @@ public class MyAsyncTask extends AsyncTask<Void, Void, Void> {
     private Boolean eventError = false;
     private Boolean eventFinish = false;
     private MyEventListener callback = null;
-    private String time1 = "";
-    private String numCups = "";
+    private String time1 = "", numCups = "", trueDate = "";
 
 
-    public MyAsyncTask(String time, String cups, MyEventListener cb) {
+    public MyAsyncTask(String time, String cups, String date, MyEventListener cb) {
 //        super();
         time1 = time;
+        trueDate = date;
         numCups = cups;
         callback = cb;
 
@@ -52,7 +52,7 @@ public class MyAsyncTask extends AsyncTask<Void, Void, Void> {
 
                             Log.d("VALUE2", "cup" + numCups);
                             VariableDto cups = new VariableDto();
-                            cups.setName("cup1");
+                            cups.setName("cup" + numCups);
                             cups.setType(VariableDto.TypeEnum.BOOLEAN);
 
                             VariableDto v = new VariableDto();
@@ -93,10 +93,10 @@ public class MyAsyncTask extends AsyncTask<Void, Void, Void> {
                             VariableSchedulerDto scheduler = new VariableSchedulerDto();
                             scheduler.setCron("string");
                             scheduler.setMode(VariableSchedulerDto.ModeEnum.TIME);
-                            scheduler.setTime(output2 + " " + output);
+                            scheduler.setTime(trueDate + " " + output);
                             scheduler.setValues(Arrays.asList(numCups + ",true"));
 
-                            Log.d("Date3: ", output2 + " " + output);
+                            Log.d("Date3: ", trueDate + " " + output);
 
                             if(schedulers.isEmpty()) {
                                 getVariableApi().addScheduler(scheduler,v.getName(),v.getType().toString(),arToken);
@@ -120,7 +120,7 @@ public class MyAsyncTask extends AsyncTask<Void, Void, Void> {
                                 getVariableApi().setVariableTextValue("0,false", v.getName(), v.getType().toString(), arToken);
                                 Log.d(TAG + " Tested2", "Success1");
 
-                                scheduler.setTime(output2 + " " + output);
+                                scheduler.setTime(trueDate + " " + output);
 
                                 getVariableApi().setVariableTextValue("2", cookStatus.getName(), cookStatus.getType().toString(), arToken);
                                 Log.d(TAG + " Tested2", "Success2");

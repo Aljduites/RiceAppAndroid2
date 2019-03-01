@@ -34,70 +34,137 @@
             android:gravity="center"
             android:orientation="vertical">
             <TextView
-                android:id="@+id/lblCookTime"
+                android:id="@+id/lblDateText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/lblCookTime"
+                android:text="@string/lblDateText"
                 android:gravity="center"
-                android:textSize="35sp"
+                android:textSize="25sp"
                 android:textColor="@color/colorPrimaryDark"
                 android:textStyle="bold"
                 />
 
             <TextView
-                android:id="@+id/lblCookSetTime"
+                android:id="@+id/lblCookDate"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textSize="30sp"
-                android:padding="20dp"
+                android:padding="10dp"
                 android:gravity="center"
                 android:textStyle="bold"
                 android:textColor="@color/colorPrimaryDark"
                 android:background="@color/colorLabel"
                 />
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_margin="0dp">
+                <GridLayout
+                    android:id="@+id/gridButtons1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_margin="0dp"
+                    android:columnOrderPreserved="false"
+                    android:alignmentMode="alignMargins"
+                    android:orientation="horizontal"
+                    android:rowCount="2"
+                    android:columnCount="3"
+                    android:padding="20dp"
+                    >
+                    <Button
+                        android:id="@+id/btnToday"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:padding="17dp"
+                        android:text="@string/btnToday"
+                        android:textSize="20dp"
+                        />
+                    <Button
+                        android:id="@+id/btnTomorrow"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:padding="17dp"
+                        android:text="@string/btnTomorrow"
+                        android:textSize="20dp"
+                        />
+                    <Button
+                        android:id="@+id/btnCustom"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:padding="17dp"
+                        android:text="@string/btnCustom"
+                        android:textSize="20dp"
+                        />
+                </GridLayout>
 
+            </HorizontalScrollView>
+
+            <TextView
+                android:id="@+id/lblCookTime"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/lblCookTime"
+                android:gravity="center"
+                android:textSize="25sp"
+                android:textColor="@color/colorPrimaryDark"
+                android:textStyle="bold"
+                />
+            <TextView
+                android:id="@+id/lblCookSetTime"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="30sp"
+                android:padding="10dp"
+                android:gravity="center"
+                android:textStyle="bold"
+                android:textColor="@color/colorPrimaryDark"
+                android:background="@color/colorLabel"
+                />
             <Button
                 android:id="@+id/btnTimePicker"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/btnTimePicker"
-                android:textSize="35dp"
+                android:textSize="30dp"
+                android:enabled="false"
                 />
-
-            <LinearLayout
+            <GridLayout
+                android:id="@+id/gridButtons2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="15dp"
+                android:layout_gravity="center"
+                android:layout_margin="0dp"
+                android:columnOrderPreserved="false"
+                android:alignmentMode="alignMargins"
                 android:orientation="horizontal"
+                android:columnCount="2"
+                android:padding="15dp"
                 >
-
-
                 <Button
                     android:id="@+id/btnOkTime"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="20sp"
+                    android:textSize="20dp"
                     android:padding="20dp"
                     android:text="@string/ok"
                     android:layout_marginStart="35dp"
                     android:layout_marginLeft="35dp"
 
                     />
-
-
-
                 <Button
                     android:id="@+id/btnCancelTime"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="35dp"
                     android:layout_marginLeft="35dp"
-                    android:textSize="17sp"
+                    android:textSize="20dp"
                     android:padding="20dp"
                     android:text="@string/cancel"
                     />
 
-            </LinearLayout>
+            </GridLayout>
         </LinearLayout>
     </ScrollView>
 
