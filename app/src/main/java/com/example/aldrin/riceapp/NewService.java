@@ -38,27 +38,35 @@ public class NewService extends IntentService {
     public void onDestroy() {
 
         super.onDestroy();
-        timer.cancel();
-        stopMyService();
 
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    String arToken = "~XFt2FmYgf3dxKTdZpb3CuCZJRTq4Z55FkNSJwQwFry1A64iEvchIs3WTKXezEFh4j";
-                    VariableDto cookStatus = new VariableDto();
-                    cookStatus.setName("cookerStatus");
-                    cookStatus.setType(VariableDto.TypeEnum.INTEGER);
+        try {
+            timer.cancel();
+            stopMyService();
 
-                    getVariableApi().setVariableTextValue("0", cookStatus.getName(), cookStatus.getType().toString(), arToken);
-                } catch (ApiException e) {
-                    Log.d("errorHere6", e.toString());
-                    e.printStackTrace();
+            Thread thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        String arToken = "~XFt2FmYgf3dxKTdZpb3CuCZJRTq4Z55FkNSJwQwFry1A64iEvchIs3WTKXezEFh4j";
+                        VariableDto cookStatus = new VariableDto();
+                        cookStatus.setName("cookerStatus");
+                        cookStatus.setType(VariableDto.TypeEnum.INTEGER);
+
+                        getVariableApi().setVariableTextValue("0", cookStatus.getName(), cookStatus.getType().toString(), arToken);
+                    } catch (ApiException e) {
+                        Log.d("errorHere6", e.toString());
+                        e.printStackTrace();
+                    }
+
                 }
+            });
+            thread.start();
+        }catch (Exception e) {
+            Log.d("NotificationDestroy", e.toString());
+            e.printStackTrace();
+        }
 
-            }
-        });
-        thread.start();
+
     }
 
     @Override
@@ -200,28 +208,36 @@ public class NewService extends IntentService {
     }
 
     void startServiceWithNotification() {
-        if (isServiceRunning) return;
-        isServiceRunning = true;
+
+        try {
+
+//            if (isServiceRunning) return;
+            isServiceRunning = true;
+//
+            Bitmap icon = BitmapFactory.decodeResource(getResources(), R.drawable.icon);
+
+            Notification notification = new NotificationCompat.Builder(getBaseContext(), "12345")
+                    .setContentTitle(getResources().getString(R.string.app_name))
+                    .setTicker(getResources().getString(R.string.app_name))
+                    .setContentText(getResources().getString(R.string.timerSet))
+                    .setSmallIcon(R.drawable.icon)
+                    .setLargeIcon(Bitmap.createScaledBitmap(icon, 128, 128, false))
+//                .setContentIntent(contentPendingIntent)
+                    .setOngoing(true)
+//                .setDeleteIntent(contentPendingIntent)  // if needed
+                    .build();
+            notification.flags = notification.flags | Notification.FLAG_NO_CLEAR;     // NO_CLEAR makes the notification stay when the user performs a "delete all" command
+            startForeground(NOTIFICATION_ID, notification);
+        } catch (Exception e) {
+            Log.d("NotificationError", e.toString());
+            e.printStackTrace();
+        }
 //
 //        Intent notificationIntent = new Intent(getApplicationContext(), MyActivity.class);
 //        notificationIntent.setAction(C.ACTION_MAIN);  // A string containing the action name
 //        notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
 //        PendingIntent contentPendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
 
-        Bitmap icon = BitmapFactory.decodeResource(getResources(), R.drawable.icon);
-
-        Notification notification = new NotificationCompat.Builder(getBaseContext(), "12345")
-                .setContentTitle(getResources().getString(R.string.app_name))
-                .setTicker(getResources().getString(R.string.app_name))
-                .setContentText(getResources().getString(R.string.timerSet))
-                .setSmallIcon(R.drawable.icon)
-                .setLargeIcon(Bitmap.createScaledBitmap(icon, 128, 128, false))
-//                .setContentIntent(contentPendingIntent)
-                .setOngoing(true)
-//                .setDeleteIntent(contentPendingIntent)  // if needed
-                .build();
-        notification.flags = notification.flags | Notification.FLAG_NO_CLEAR;     // NO_CLEAR makes the notification stay when the user performs a "delete all" command
-        startForeground(NOTIFICATION_ID, notification);
 //        waitForResponse();
     }
 

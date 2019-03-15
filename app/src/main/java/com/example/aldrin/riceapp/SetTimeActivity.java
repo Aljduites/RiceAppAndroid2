@@ -66,13 +66,15 @@ public class SetTimeActivity extends AppCompatActivity implements TimePickerDial
     private Calendar dateSelected = Calendar.getInstance();
     private DatePickerDialog datePickerDialog;
 
+    public static final boolean[] done = {false, false, false, false};
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_set_time);
         Log.d(TAG, "onCreate: SetTimeActivity");
         setViewIds();
-        waitForResponse();
+//        waitForResponse();
 
         btnSetTime.setOnClickListener(new View.OnClickListener() {
             @Override

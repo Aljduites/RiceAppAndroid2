@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 public class MyAsyncTask extends AsyncTask<Void, Void, Void> {
     private static final String TAG = MyEventListener.class.getName();
@@ -23,6 +24,7 @@ public class MyAsyncTask extends AsyncTask<Void, Void, Void> {
     private Boolean eventFinish = false;
     private MyEventListener callback = null;
     private String time1 = "", numCups = "", trueDate = "";
+
 
 
     public MyAsyncTask(String time, String cups, String date, MyEventListener cb) {
@@ -99,39 +101,68 @@ public class MyAsyncTask extends AsyncTask<Void, Void, Void> {
                             Log.d("Date3: ", trueDate + " " + output);
 
                             if(schedulers.isEmpty()) {
-                                getVariableApi().addScheduler(scheduler,v.getName(),v.getType().toString(),arToken);
-                                Log.d(TAG + " Tested1", "Success1");
 
-                                getVariableApi().setVariableTextValue("0,false", v.getName(), v.getType().toString(), arToken);
-                                Log.d(TAG + " Tested1", "Success2");
+                                if(SetTimeActivity.done[0] == false) {
+                                    getVariableApi().setVariableTextValue("4", cookStatus.getName(), cookStatus.getType().toString(), arToken);
+                                    Log.d(TAG + " Tested1", "Success3");
+                                    SetTimeActivity.done[0] = true;
+                                }
+                                if(SetTimeActivity.done[1] == false) {
+                                    getVariableApi().setVariableTextValue("true", cups.getName(), cups.getType().toString(), arToken);
+                                    Log.d(TAG + " Tested1", "Success4");
+                                    SetTimeActivity.done[1] = true;
+                                }
+                                if(SetTimeActivity.done[2] == false) {
 
-                                getVariableApi().setVariableTextValue("2", cookStatus.getName(), cookStatus.getType().toString(), arToken);
-                                Log.d(TAG + " Tested1", "Success3");
+                                    getVariableApi().setVariableTextValue("0,false", v.getName(), v.getType().toString(), arToken);
+                                    Log.d(TAG + " Tested1", "Success2");
 
-
-                                getVariableApi().setVariableTextValue("true", cups.getName(), cups.getType().toString(), arToken);
-                                Log.d(TAG + " Tested1", "Success4");
-                                eventFinish = true;
+                                    getVariableApi().addScheduler(scheduler,v.getName(),v.getType().toString(),arToken);
+                                    Log.d(TAG + " Tested1", "Success1");
+                                    SetTimeActivity.done[2] = true;
+                                    eventFinish = true;
+                                }
                             }
                             else {
-                                // get schedulers
-                                schedulers = getVariableApi().getSchedulers(v.getName(), v.getType().toString(), arToken);
 
-                                getVariableApi().setVariableTextValue("0,false", v.getName(), v.getType().toString(), arToken);
-                                Log.d(TAG + " Tested2", "Success1");
+                                if(SetTimeActivity.done[0] == false) {
+                                    getVariableApi().setVariableTextValue("4", cookStatus.getName(), cookStatus.getType().toString(), arToken);
+                                    Log.d(TAG + " Tested2", "Success2");
+                                    SetTimeActivity.done[0] = true;
+                                }
+                                if(SetTimeActivity.done[1] == false) {
 
-                                scheduler.setTime(trueDate + " " + output);
+                                    getVariableApi().setVariableTextValue("true", cups.getName(), cups.getType().toString(), arToken);
+                                    Log.d(TAG + " Tested2", "Success3");
+                                    SetTimeActivity.done[1] = true;
+                                }
+                                if(SetTimeActivity.done[2] == false) {
+                                    // get schedulers
+                                    schedulers = getVariableApi().getSchedulers(v.getName(), v.getType().toString(), arToken);
 
-                                getVariableApi().setVariableTextValue("2", cookStatus.getName(), cookStatus.getType().toString(), arToken);
-                                Log.d(TAG + " Tested2", "Success2");
+                                    if(schedulers.isEmpty()) {
+                                        getVariableApi().setVariableTextValue("0,false", v.getName(), v.getType().toString(), arToken);
+                                        Log.d(TAG + " Tested1", "Success2");
 
-                                getVariableApi().setVariableTextValue("true", cups.getName(), cups.getType().toString(), arToken);
-                                Log.d(TAG + " Tested2", "Success3");
+                                        getVariableApi().addScheduler(scheduler,v.getName(),v.getType().toString(),arToken);
+                                        Log.d(TAG + " Tested1", "Success1");
+                                        SetTimeActivity.done[2] = true;
+                                        eventFinish = true;
+                                    } else {
 
-                                getVariableApi().updateScheduler(scheduler, schedulers.get(0).getVariableSchedulerId(), arToken);
-                                Log.d(TAG + " Tested2", "Success4");
-                                eventFinish = true;
+                                        getVariableApi().setVariableTextValue("0,false", v.getName(), v.getType().toString(), arToken);
+                                        Log.d(TAG + " Tested2", "Success1");
 
+                                        scheduler.setTime(trueDate + " " + output);
+
+                                        getVariableApi().updateScheduler(scheduler, schedulers.get(0).getVariableSchedulerId(), arToken);
+                                        Log.d(TAG + " Tested2", "Success4");
+                                        eventFinish = true;
+
+                                        SetTimeActivity.done[2] = true;
+
+                                    }
+                                }
                             }
 
 //                        Log.d(TAG + " Testing", textValue);

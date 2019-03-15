@@ -2,8 +2,10 @@ package com.example.aldrin.riceapp;
 
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.app.AlertDialog;
 import android.app.Service;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.HandlerThread;
 import android.support.v7.app.AppCompatActivity;
@@ -41,7 +43,7 @@ import org.remoteme.client.invoker.ApiException;
 import org.remoteme.client.model.VariableDto;
 import org.remoteme.client.model.VariableSchedulerEntityDto;
 
-public class HomeActivity extends AppCompatActivity {
+public class HomeActivity extends AppCompatActivity implements MyEventListener{
 
     private static final String TAG = HomeActivity.class.getName();
     private static final String FILE_NAME = "example.txt";
@@ -56,7 +58,12 @@ public class HomeActivity extends AppCompatActivity {
     private boolean isRecursionEnable = true;
     private Timer timer = new Timer();
     final String[] d = {"1"};
+    final String[] output = {null};
+    final String[] output2 = {null};
     public static boolean isAlarmed = true;
+
+    private AlertDialog.Builder builder1;
+    private AlertDialog alertDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,7 +89,6 @@ public class HomeActivity extends AppCompatActivity {
 
 
                 try {
-                    final String arToken = "~XFt2FmYgf3dxKTdZpb3CuCZJRTq4Z55FkNSJwQwFry1A64iEvchIs3WTKXezEFh4j";
                     long currentTime1 = System.currentTimeMillis() - TEN_MINUTES;
                     final Date today = new Date();
 
@@ -98,8 +104,6 @@ public class HomeActivity extends AppCompatActivity {
                     //Desired format: 24 hour format: Change the pattern as per the need
                     final DateFormat outputformat = new SimpleDateFormat("HH:mm", Locale.US);
                     final DateFormat dateOutput = new SimpleDateFormat("dd.MM.yyyy", Locale.US);
-                    final String[] output = {null};
-                    final String[] output2 = {null};
 
                     date[0] = timeformat.parse(lblTime.getText().toString());
                     date2[0] = dateFormat.parse(today.toString());
@@ -108,41 +112,15 @@ public class HomeActivity extends AppCompatActivity {
                     output2[0] = dateOutput.format(date2[0]);
 
                     Log.d("cancelHere", output2[0] + " " + output[0]);
-
                     loadingPanel.setVisibility(View.VISIBLE);
+
                     stopService(new Intent(getBaseContext(), NewService.class));
-
-                    final VariableDto vS = new VariableDto();
-                    vS.setName("startButton");
-                    vS.setType(VariableDto.TypeEnum.INTEGER_BOOLEAN);
-
-                    Thread thread = new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-
-
-                            try {
-                                List<VariableSchedulerEntityDto> schedulers = getVariableApi().getSchedulers(vS.getName(), vS.getType().toString(), arToken);
-
-                                VariableSchedulerDto scheduler = new VariableSchedulerDto();
-                                scheduler.setCron("string");
-                                scheduler.setMode(VariableSchedulerDto.ModeEnum.TIME);
-                                scheduler.setTime(output2[0] + " " + output[0]);
-                                scheduler.setValues(Arrays.asList("0,true"));
-                                scheduler.setVariableSchedulerId(schedulers.get(0).getVariableSchedulerId());
-                                getVariableApi().updateScheduler(scheduler, schedulers.get(0).getVariableSchedulerId(), arToken);
-                            } catch (ApiException e) {
-                                loadingPanel.setVisibility(View.VISIBLE);
-                                Log.d("cancelHere5", e.toString());
-                                e.printStackTrace();
-                            }
-                        }
-                    });
-                    thread.start();
-
+                    //------------
+                    new CancelAsyncTask(output2[0], output[0], HomeActivity.this).execute();
 
                 } catch (Exception e) {
                     Log.d("cancelHere4", e.toString());
+
                     e.printStackTrace();
                 }
             }
@@ -158,6 +136,7 @@ public class HomeActivity extends AppCompatActivity {
         loadingPanel = findViewById(R.id.loadingPanel3);
         lblRiceLevel = findViewById(R.id.lblRiceLevel);
         lblMachineStatus.setText(R.string.standBy1);
+        builder1 = new AlertDialog.Builder(HomeActivity.this);
     }
     private void setData() {
         try{
@@ -165,9 +144,9 @@ public class HomeActivity extends AppCompatActivity {
             bundle = getIntent().getExtras();
             _retVal = bundle.getString("time");
             Log.d("TimeHere", _retVal);
-            if(!_retVal.isEmpty()) {
-                save();
-            }
+//            if(!_retVal.isEmpty()) {
+//                save();
+//            }
 //            wait(5000);
         } catch (Exception e) {
 
@@ -326,6 +305,10 @@ public class HomeActivity extends AppCompatActivity {
     void runInBackground() {
         final String[] d = {"true", "false"};
         final FileInputStream[] fis = {null};
+        final String[] remoteSchedulerDate = {""};
+        final DateFormat inputDate = new SimpleDateFormat("HH:mm", Locale.US);
+        final DateFormat outputDate = new SimpleDateFormat("hh:mm aa", Locale.US);
+        final Date[] date1 = new Date[1];
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
@@ -351,6 +334,14 @@ public class HomeActivity extends AppCompatActivity {
                                 d[1] = getVariableApi().getVariableTextValue(v1.getName(), v1.getType().toString(), arToken);
 
                                 riceStatus = d[1];
+
+                                VariableDto v2 = new VariableDto();
+                                v2.setName("startButton");
+                                v2.setType(VariableDto.TypeEnum.INTEGER_BOOLEAN);
+
+                                List<VariableSchedulerEntityDto> schedulers = getVariableApi().getSchedulers(v2.getName(), v2.getType().toString(), arToken);
+                                date1[0] = inputDate.parse(schedulers.get(0).getTime().split(" ")[1]);
+                                remoteSchedulerDate[0] = outputDate.format(date1[0]);
                                 latch.countDown();
 
                             } catch(Exception e) {
@@ -360,11 +351,11 @@ public class HomeActivity extends AppCompatActivity {
                             synchronized (this) {
                                 try {
 
-                                    fis[0] = openFileInput(FILE_NAME);
-                                    InputStreamReader isr = new InputStreamReader(fis[0]);
-                                    final BufferedReader rdr = new BufferedReader(isr);
-                                    final StringBuilder stringBuilder = new StringBuilder();
-                                    final String[] timeTxt = new String[1];
+//                                    fis[0] = openFileInput(FILE_NAME);
+//                                    InputStreamReader isr = new InputStreamReader(fis[0]);
+//                                    final BufferedReader rdr = new BufferedReader(isr);
+//                                    final StringBuilder stringBuilder = new StringBuilder();
+//                                    final String[] timeTxt = new String[1];
 
 //                                    wait(5000);
 
@@ -379,24 +370,19 @@ public class HomeActivity extends AppCompatActivity {
                                                     lblRiceLevel.setText(R.string.lowStatus1);
                                                 }
 
-                                                if(cookingStatus.equals("2")) {
-                                                    while((timeTxt[0] = rdr.readLine()) != null) {
-                                                        stringBuilder.append(timeTxt[0]).append("");
-                                                    }
-//                        Log.d("TAG2", "load: " + stringBuilder.toString());
-                                                    lblTime.setText(stringBuilder.toString());
+                                                if(cookingStatus.equals("2") || cookingStatus.equals("3") || cookingStatus.equals("4")) {
+
+                                                    lblTime.setText(remoteSchedulerDate[0]);
 
                                                     lblMachineStatus.setText(R.string.standBy3);
                                                     lblMachineStatus.setBackgroundColor(getResources().getColor(R.color.colorPrepare));
                                                     btn1.setEnabled(false);
+                                                    btnCancel.setEnabled(true);
                                                     loadingPanel.setVisibility(View.GONE);
 
                                                 } else if(cookingStatus.equals("1")) {
-                                                    while((timeTxt[0] = rdr.readLine()) != null) {
-                                                        stringBuilder.append(timeTxt[0]).append("");
-                                                    }
-//                        Log.d("TAG2", "load: " + stringBuilder.toString());
-                                                    lblTime.setText(stringBuilder.toString());
+
+                                                    lblTime.setText(remoteSchedulerDate[0]);
 
                                                     lblMachineStatus.setText(R.string.standBy2);
                                                     lblMachineStatus.setBackgroundColor(getResources().getColor(R.color.colorCookStart));
@@ -409,11 +395,47 @@ public class HomeActivity extends AppCompatActivity {
                                                     lblMachineStatus.setText(R.string.standBy1);
                                                     lblMachineStatus.setBackgroundColor(getResources().getColor(R.color.colorStandby));
                                                     btn1.setEnabled(true);
-                                                    btnCancel.setEnabled(true);
+                                                    btnCancel.setEnabled(false);
                                                     loadingPanel.setVisibility(View.GONE);
-
-
                                                 }
+
+
+
+//                                                if(cookingStatus.equals("2")) {
+//                                                    while((timeTxt[0] = rdr.readLine()) != null) {
+//                                                        stringBuilder.append(timeTxt[0]).append("");
+//                                                    }
+////                        Log.d("TAG2", "load: " + stringBuilder.toString());
+//                                                    lblTime.setText(stringBuilder.toString());
+//
+//                                                    lblMachineStatus.setText(R.string.standBy3);
+//                                                    lblMachineStatus.setBackgroundColor(getResources().getColor(R.color.colorPrepare));
+//                                                    btn1.setEnabled(false);
+//                                                    loadingPanel.setVisibility(View.GONE);
+//
+//                                                } else if(cookingStatus.equals("1")) {
+//                                                    while((timeTxt[0] = rdr.readLine()) != null) {
+//                                                        stringBuilder.append(timeTxt[0]).append("");
+//                                                    }
+////                        Log.d("TAG2", "load: " + stringBuilder.toString());
+//                                                    lblTime.setText(stringBuilder.toString());
+//
+//                                                    lblMachineStatus.setText(R.string.standBy2);
+//                                                    lblMachineStatus.setBackgroundColor(getResources().getColor(R.color.colorCookStart));
+//                                                    btn1.setEnabled(false);
+//                                                    btnCancel.setEnabled(false);
+//                                                    loadingPanel.setVisibility(View.GONE);
+//                                                }
+//                                                else {
+//                                                    lblTime.setText("");
+//                                                    lblMachineStatus.setText(R.string.standBy1);
+//                                                    lblMachineStatus.setBackgroundColor(getResources().getColor(R.color.colorStandby));
+//                                                    btn1.setEnabled(true);
+//                                                    btnCancel.setEnabled(true);
+//                                                    loadingPanel.setVisibility(View.GONE);
+//
+//
+//                                                }
 
                                             }catch (Exception e) {
                                                 Log.d("errorH1", e.toString());
@@ -425,7 +447,11 @@ public class HomeActivity extends AppCompatActivity {
                                     //Log.d("errorH2", e.toString());
                                     //e.printStackTrace();
                                 //}
-                                catch (FileNotFoundException e) {
+//                                catch (FileNotFoundException e) {
+//                                    Log.d("errorH3", e.toString());
+//                                    e.printStackTrace();
+//                                }
+                                catch(Exception e) {
                                     Log.d("errorH3", e.toString());
                                     e.printStackTrace();
                                 }
@@ -441,18 +467,48 @@ public class HomeActivity extends AppCompatActivity {
                     Log.d("Error1",e.toString());
                     e.printStackTrace();
                 } finally {
-                    if(fis[0] != null) {
-                        try {
-                            fis[0].close();
-                        }catch (IOException e) {
-                            Log.d("File2", e.toString());
-                            e.printStackTrace();
-                        }
-                    }
+//                    if(fis[0] != null) {
+//                        try {
+//                            fis[0].close();
+//                        }catch (IOException e) {
+//                            Log.d("File2", e.toString());
+//                            e.printStackTrace();
+//                        }
+//                    }
                 }
             }
         }, 0, 10000);
+    }
 
+    @Override
+    public void EventComplete() {
+        loadingPanel.setVisibility(View.INVISIBLE);
+        lblMachineStatus.setText(R.string.standBy1);
+        lblTime.setText("");
+    }
 
+    @Override
+    public void EventFailed() {
+        builder1.setMessage("Something went wrong. Please try again later.");
+//        builder1.setCancelable(false);
+
+        builder1.setPositiveButton("Try again", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                Log.d(TAG + " EventFailed: ", "Error");
+//                loadingPanel.setVisibility(View.GONE);
+
+                new CancelAsyncTask(output2[0], output[0], HomeActivity.this).execute();
+            }
+        });
+
+        alertDialog = builder1.create();
+        alertDialog.setOnShowListener(new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(DialogInterface dialog) {
+                ((AlertDialog)dialog).getButton(AlertDialog.BUTTON_NEGATIVE).setEnabled(false);
+            }
+        });
+        alertDialog.show();
     }
 }
