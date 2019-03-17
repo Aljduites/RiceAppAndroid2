@@ -103,7 +103,7 @@ public class MyAsyncTask extends AsyncTask<Void, Void, Void> {
                             if(schedulers.isEmpty()) {
 
                                 if(SetTimeActivity.done[0] == false) {
-                                    getVariableApi().setVariableTextValue("4", cookStatus.getName(), cookStatus.getType().toString(), arToken);
+                                    getVariableApi().setVariableTextValue("2", cookStatus.getName(), cookStatus.getType().toString(), arToken);
                                     Log.d(TAG + " Tested1", "Success3");
                                     SetTimeActivity.done[0] = true;
                                 }
@@ -126,7 +126,7 @@ public class MyAsyncTask extends AsyncTask<Void, Void, Void> {
                             else {
 
                                 if(SetTimeActivity.done[0] == false) {
-                                    getVariableApi().setVariableTextValue("4", cookStatus.getName(), cookStatus.getType().toString(), arToken);
+                                    getVariableApi().setVariableTextValue("2", cookStatus.getName(), cookStatus.getType().toString(), arToken);
                                     Log.d(TAG + " Tested2", "Success2");
                                     SetTimeActivity.done[0] = true;
                                 }
